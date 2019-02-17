@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <RootNamespace>Frogvall.AspNetCore.ExceptionHandling.Test</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="5.6.0" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.2.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
+    <PackageReference Include="Moq" Version="4.10.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <DotNetCliToolReference Include="dotnet-xunit" Version="2.4.0-beta.1.build3958" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\aspnetcore-exceptionhandler-awsxray\aspnetcore-exceptionhandler-awsxray.csproj" />
+    <ProjectReference Include="..\..\src\aspnetcore-exceptionhandler-modelvalidation\aspnetcore-exceptionhandler-modelvalidation.csproj" />
+    <ProjectReference Include="..\..\src\aspnetcore-exceptionhandler-swagger\aspnetcore-exceptionhandler-swagger.csproj" />
+    <ProjectReference Include="..\..\src\aspnetcore-exceptionhandler\aspnetcore-exceptionhandler.csproj" />
+  </ItemGroup>
+
+</Project>

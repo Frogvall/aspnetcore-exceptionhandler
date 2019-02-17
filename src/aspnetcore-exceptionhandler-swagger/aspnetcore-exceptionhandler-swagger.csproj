@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Frogvall.AspNetCore.ExceptionHandling</RootNamespace>
+    <AssemblyName>ExceptionHandling.Swagger</AssemblyName>
+    <PackageId>Frogvall.AspNetCore.ExceptionHandling.Swagger</PackageId>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="4.0.1" />
+  </ItemGroup>
+
+</Project>
