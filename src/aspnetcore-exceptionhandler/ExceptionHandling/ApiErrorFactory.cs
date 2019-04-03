@@ -12,8 +12,14 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
     public static class ApiErrorFactory
     {
         internal static ApiError Build<TCategoryName>(HttpContext context, Exception ex, IExceptionMapper mapper,
-            ILogger<TCategoryName> logger, bool isDevelopment)
+            ILogger<TCategoryName> logger, bool isDevelopment, Action<Exception>[] exceptionListeners)
         {
+            //Execute custom exception handlers first.
+            foreach (var customExceptionListener in exceptionListeners)
+            {
+                customExceptionListener.Invoke(ex);
+            }
+
             context.Response.ContentType = "application/json";
 
             HttpStatusCode statusCode;
@@ -25,7 +31,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
                 case BaseApiException _:
                     try
                     {
-                        developerContext = (ex as BaseApiException)?.DeveloperContext;
+                        if (mapper.Options.RespondWithDeveloperContext) developerContext = (ex as BaseApiException)?.DeveloperContext;
                         errorCode = mapper.GetErrorCode(ex as BaseApiException);
                         statusCode = mapper.GetExceptionHandlerReturnCode(ex as BaseApiException);
                         context.Response.StatusCode = (int)statusCode;

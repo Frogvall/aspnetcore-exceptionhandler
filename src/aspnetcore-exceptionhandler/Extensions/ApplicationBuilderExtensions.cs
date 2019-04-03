@@ -1,4 +1,5 @@
-﻿using Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling;
+﻿using System;
+using Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling;
 using Frogvall.AspNetCore.ExceptionHandling.Mapper;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
@@ -8,14 +9,15 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static class ApplicationBuilderExtensions
     {
-        public static IApplicationBuilder UseApiExceptionHandler(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseApiExceptionHandler(this IApplicationBuilder builder, params Action<Exception>[] exceptionListeners)
         {
             return builder.UseExceptionHandler(new ExceptionHandlerOptions
             {
                 ExceptionHandler = new ApiExceptionHandler(
                     builder.ApplicationServices.GetRequiredService<IExceptionMapper>(),
                     builder.ApplicationServices.GetRequiredService<IHostingEnvironment>(),
-                    builder.ApplicationServices.GetRequiredService<ILogger<ApiExceptionHandler>>())
+                    builder.ApplicationServices.GetRequiredService<ILogger<ApiExceptionHandler>>(),
+                    exceptionListeners)
                     .ExceptionHandler
             });
         }

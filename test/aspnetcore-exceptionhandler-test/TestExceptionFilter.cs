@@ -26,11 +26,13 @@ namespace AspNetCoreApiUtilities.Tests
     {
         private HttpClient _client;
         private readonly ITestOutputHelper _output;
+        private Exception _exceptionSetByExceptionListener;
 
         public TestExceptionFilter(ITestOutputHelper output)
         {
             _output = output;
             // Run for every test case
+            _exceptionSetByExceptionListener = null;
             SetupServer();
         }
 
@@ -48,7 +50,7 @@ namespace AspNetCoreApiUtilities.Tests
                     services.AddMvc(options =>
                     {
                         options.Filters.Add(new ValidateModelFilter {ErrorCode = 1337});
-                        options.Filters.Add<ApiExceptionFilter>();
+                        options.Filters.Add(new ApiExceptionFilter(ex => _exceptionSetByExceptionListener = ex));
                     });
                 })
                 .Configure(app =>
@@ -94,6 +96,32 @@ namespace AspNetCoreApiUtilities.Tests
             error.ErrorCode.Should().Be(-1);
             error.DeveloperContext.Should().BeNull();
             error.Service.Should().Be(expectedServiceName);
+        }
+
+        [Fact]
+        public async Task PostTest_ValidDto_PostTest_DtoIntSetToFive_ExceptionListenerNotSet()
+        {
+            //Arrange
+            var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 1}}", Encoding.UTF8, "text/json");
+
+            // Act
+            await _client.PostAsync("/api/Test", content);
+
+            // Assert
+            _exceptionSetByExceptionListener.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task PostTest_DtoIntSetToFive_ExceptionListenerSetsException()
+        {
+            //Arrange
+            var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 5}}", Encoding.UTF8, "text/json");
+
+            // Act
+            await _client.PostAsync("/api/Test", content);
+
+            // Assert
+            _exceptionSetByExceptionListener.Should().BeOfType<TestException3>();
         }
 
         [Fact]
