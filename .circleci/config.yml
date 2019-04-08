@@ -14,7 +14,7 @@ jobs:
       - run: dotnet restore
       - run: cd test/aspnetcore-exceptionhandler-test
       - run: dotnet test --test-adapter-path:. --logger:"xunit;LogFilePath=${pwd}/../../testresults/out.xml"
-      - run: cd -
+      - run: cd ../..
       - run: dotnet pack src/aspnetcore-exceptionhandler/aspnetcore-exceptionhandler.csproj -c release -o ${pwd}/package
       - run: dotnet pack src/aspnetcore-exceptionhandler-awsxray/aspnetcore-exceptionhandler-awsxray.csproj -c release -o ${pwd}/package
       - run: dotnet pack src/aspnetcore-exceptionhandler-modelvalidation/aspnetcore-exceptionhandler-modelvalidation.csproj -c release -o ${pwd}/package
