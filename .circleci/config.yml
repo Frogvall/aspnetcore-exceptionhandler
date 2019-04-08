@@ -3,8 +3,7 @@ version: 2.1
 executors:
   ci-executor:
     docker:
-      - image: circleci/build-image:ubuntu-14.04-XXL-upstart-1189-5614f37
-        command: /sbin/init
+      - image: mcr.microsoft.com/dotnet/core/sdk:2.2
     working_directory: ~/Frogvall/aspnetcore-exceptionhandler
 
 jobs:
@@ -12,15 +11,14 @@ jobs:
     executor: ci-executor
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - run: docker info
-      - run: docker build -t aspnetcore-exceptionhandler-build .
-      - run: docker create --name aspnetcore-exceptionhandler-build aspnetcore-exceptionhandler-build
-      - run: docker cp aspnetcore-exceptionhandler-build:/package ./package
-      - run: docker cp aspnetcore-exceptionhandler-build:/testresults/ ./testresults
-      - run: ls
-      - run: ls ./package
+      - run: dotnet restore
+      - run: cd test/aspnetcore-exceptionhandler-test
+      - run: dotnet test --test-adapter-path:. --logger:"xunit;LogFilePath=${pwd}/../../testresults/out.xml"
+      - run: cd -
+      - run: dotnet pack src/aspnetcore-exceptionhandler/aspnetcore-exceptionhandler.csproj -c release -o ${pwd}/package
+      - run: dotnet pack src/aspnetcore-exceptionhandler-awsxray/aspnetcore-exceptionhandler-awsxray.csproj -c release -o ${pwd}/package
+      - run: dotnet pack src/aspnetcore-exceptionhandler-modelvalidation/aspnetcore-exceptionhandler-modelvalidation.csproj -c release -o ${pwd}/package
+      - run: dotnet pack src/aspnetcore-exceptionhandler-swagger/aspnetcore-exceptionhandler-swagger.csproj -c release -o ${pwd}/package
       - persist_to_workspace:
           root: ~/Frogvall/aspnetcore-exceptionhandler
           paths:
@@ -32,11 +30,8 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/Frogvall/aspnetcore-exceptionhandler
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - run: ls
-      - run: ls ./package
-      - run: docker run --rm -v ~/Frogvall/aspnetcore-exceptionhandler/package:/data/package schwamster/nuget-docker push /data/package/*.nupkg $Nuget_Api_Key -Source nuget.org
+      - run: dotnet nuget push package/*.nupkg -k $Nuget_Api_Key
+
 workflows:
   version: 2
   build-and-deploy:
