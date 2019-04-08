@@ -32,7 +32,7 @@ jobs:
           at: ~/Frogvall/aspnetcore-exceptionhandler/package
       - setup_remote_docker:
           docker_layer_caching: true
-      - run: - docker run --rm -v ~/Frogvall/aspnetcore-exceptionhandler/package:/data/package schwamster/nuget-docker push /data/package/*.nupkg $Nuget_Api_Key -Source nuget.org
+      - run: docker run --rm -v ~/Frogvall/aspnetcore-exceptionhandler/package:/data/package schwamster/nuget-docker push /data/package/*.nupkg $Nuget_Api_Key -Source nuget.org
 workflows:
   version: 2
   build-and-deploy:
