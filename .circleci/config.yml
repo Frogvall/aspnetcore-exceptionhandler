@@ -20,9 +20,9 @@ jobs:
       - run: docker cp aspnetcore-exceptionhandler-build:/package ./package
       - run: docker cp aspnetcore-exceptionhandler-build:/testresults/ ./testresults
       - persist_to_workspace:
-          root: ./package
+          root: ~/Frogvall/aspnetcore-exceptionhandler
           paths:
-            - *.nupkg
+            - package/*.nupkg
       - store_test_results:
           path: ./testresults
   deploy:
