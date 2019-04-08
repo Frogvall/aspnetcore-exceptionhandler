@@ -15,10 +15,10 @@ jobs:
       - run: cd test/aspnetcore-exceptionhandler-test
       - run: dotnet test --test-adapter-path:. --logger:"xunit;LogFilePath=./../../testresults/out.xml"
       - run: cd ../..
-      - run: dotnet pack src/aspnetcore-exceptionhandler/aspnetcore-exceptionhandler.csproj -c release -o ./package
-      - run: dotnet pack src/aspnetcore-exceptionhandler-awsxray/aspnetcore-exceptionhandler-awsxray.csproj -c release -o ./package
-      - run: dotnet pack src/aspnetcore-exceptionhandler-modelvalidation/aspnetcore-exceptionhandler-modelvalidation.csproj -c release -o ./package
-      - run: dotnet pack src/aspnetcore-exceptionhandler-swagger/aspnetcore-exceptionhandler-swagger.csproj -c release -o ./package
+      - run: dotnet pack src/aspnetcore-exceptionhandler/aspnetcore-exceptionhandler.csproj -c release -o ./../../package
+      - run: dotnet pack src/aspnetcore-exceptionhandler-awsxray/aspnetcore-exceptionhandler-awsxray.csproj -c release -o ./../../package
+      - run: dotnet pack src/aspnetcore-exceptionhandler-modelvalidation/aspnetcore-exceptionhandler-modelvalidation.csproj -c release -o ./../../package
+      - run: dotnet pack src/aspnetcore-exceptionhandler-swagger/aspnetcore-exceptionhandler-swagger.csproj -c release -o ./../../package
       - persist_to_workspace:
           root: ~/Frogvall/aspnetcore-exceptionhandler
           paths:
