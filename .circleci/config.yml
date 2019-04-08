@@ -20,16 +20,16 @@ jobs:
       - run: docker cp aspnetcore-exceptionhandler-build:/package ./package
       - run: docker cp aspnetcore-exceptionhandler-build:/testresults/ ./testresults
       - persist_to_workspace:
-          root: /tmp/workspace
+          root: ~/Frogvall/aspnetcore-exceptionhandler
           paths:
-            - package/*.nupkg
+            - package
       - store_test_results:
           path: ./testresults
   deploy:
     executor: ci-executor
     steps:
       - attach_workspace:
-          at: /tmp/workspace
+          at: ~/Frogvall/aspnetcore-exceptionhandler
       - setup_remote_docker:
           docker_layer_caching: true
       - run: docker run --rm -v ~/Frogvall/aspnetcore-exceptionhandler/package:/data/package schwamster/nuget-docker push /data/package/*.nupkg $Nuget_Api_Key -Source nuget.org
