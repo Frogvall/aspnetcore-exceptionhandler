@@ -19,6 +19,8 @@ jobs:
       - run: docker create --name aspnetcore-exceptionhandler-build aspnetcore-exceptionhandler-build
       - run: docker cp aspnetcore-exceptionhandler-build:/package ./package
       - run: docker cp aspnetcore-exceptionhandler-build:/testresults/ ./testresults
+      - run: ls
+      - run: ls ./package
       - persist_to_workspace:
           root: ~/Frogvall/aspnetcore-exceptionhandler
           paths:
@@ -32,6 +34,8 @@ jobs:
           at: ~/Frogvall/aspnetcore-exceptionhandler
       - setup_remote_docker:
           docker_layer_caching: true
+      - run: ls
+      - run: ls ./package
       - run: docker run --rm -v ~/Frogvall/aspnetcore-exceptionhandler/package:/data/package schwamster/nuget-docker push /data/package/*.nupkg $Nuget_Api_Key -Source nuget.org
 workflows:
   version: 2
