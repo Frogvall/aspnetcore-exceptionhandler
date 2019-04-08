@@ -1,6 +1,6 @@
 # AspNetCore ExceptionHandler
 
-[![CircleCI](https://circleci.com/gh/schwamster/HttpService.svg?style=shield&circle-token)](https://circleci.com/gh/Frogvall/aspnetcore-exceptionhandler)
+[![CircleCI](https://circleci.com/gh/Frogvall/aspnetcore-exceptionhandler/tree/master.svg?style=svg)](https://circleci.com/gh/Frogvall/aspnetcore-exceptionhandler/tree/master)
 ![#](https://img.shields.io/nuget/v/Frogvall.AspNetCore.ExceptionHandling.svg)
 
 AspNetCore Exception Handler for asp.net core that include things like an Exception Handler middleware, modelstate validation by attribute, RequireNonDefault attribute for controller models, and swagger operation filters for 400 and 500.
