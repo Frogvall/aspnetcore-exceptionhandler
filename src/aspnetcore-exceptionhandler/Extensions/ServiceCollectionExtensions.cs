@@ -10,46 +10,31 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddExceptionMapper(this IServiceCollection services)
         {
-            var options = new ExceptionMapperOptions { ServiceName = Assembly.GetEntryAssembly().GetName().Name };
-            return AddExceptionMapperClasses(services, AppDomain.CurrentDomain.GetAssemblies(), options);
+            return AddExceptionMapperClasses(services, AppDomain.CurrentDomain.GetAssemblies(), null);
         }
 
         public static IServiceCollection AddExceptionMapper(this IServiceCollection services, ExceptionMapperOptions options)
         {
-            if (options == null)
-                options = new ExceptionMapperOptions();
-            if (options.ServiceName == null)
-                options.ServiceName = Assembly.GetEntryAssembly().GetName().Name;
             return AddExceptionMapperClasses(services, AppDomain.CurrentDomain.GetAssemblies(), options);
         }
 
         public static IServiceCollection AddExceptionMapper(this IServiceCollection services, params Assembly[] assemblies)
         {
-            var options = new ExceptionMapperOptions { ServiceName = Assembly.GetEntryAssembly().GetName().Name };
-            return AddExceptionMapperClasses(services, assemblies, options);
+            return AddExceptionMapperClasses(services, assemblies, null);
         }
 
         public static IServiceCollection AddExceptionMapper(this IServiceCollection services, ExceptionMapperOptions options, params Assembly[] assemblies)
         {
-            if (options == null)
-                options = new ExceptionMapperOptions();
-            if (options.ServiceName == null)
-                options.ServiceName = Assembly.GetEntryAssembly().GetName().Name;
             return AddExceptionMapperClasses(services, assemblies, options);
         }
 
         public static IServiceCollection AddExceptionMapper(this IServiceCollection services, params Type[] profileAssemblyMarkerTypes)
         {
-            var options = new ExceptionMapperOptions { ServiceName = Assembly.GetEntryAssembly().GetName().Name };
-            return AddExceptionMapperClasses(services, profileAssemblyMarkerTypes.Select(t => t.GetTypeInfo().Assembly), options);
+            return AddExceptionMapperClasses(services, profileAssemblyMarkerTypes.Select(t => t.GetTypeInfo().Assembly), null);
         }
 
         public static IServiceCollection AddExceptionMapper(this IServiceCollection services, ExceptionMapperOptions options, params Type[] profileAssemblyMarkerTypes)
         {
-            if (options == null)
-                options = new ExceptionMapperOptions();
-            if (options.ServiceName == null)
-                options.ServiceName = Assembly.GetEntryAssembly().GetName().Name;
             return AddExceptionMapperClasses(services, profileAssemblyMarkerTypes.Select(t => t.GetTypeInfo().Assembly), options);
         }
 
@@ -65,7 +50,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var profiles = allTypes
                 .Where(t => profileTypeInfo.IsAssignableFrom(t) && !t.IsAbstract)
                 .ToArray();
-            return services.AddSingleton<IExceptionMapper>(sp => new ExceptionMapper(profiles, options));
+            return services.AddSingleton<IExceptionMapper>(sp => new ExceptionMapper(profiles, options ?? new ExceptionMapperOptions()));
         }
     }
 }

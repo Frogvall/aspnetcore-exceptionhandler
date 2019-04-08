@@ -1,0 +1,46 @@
+version: 2.1
+
+executors:
+  ci-executor:
+    docker:
+      - image: circleci/build-image:ubuntu-14.04-XXL-upstart-1189-5614f37
+        command: /sbin/init
+    working_directory: ~/Frogvall/aspnetcore-exceptionhandler
+
+jobs:
+  build:
+    executor: ci-executor
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run: docker info
+      - run: docker build -t aspnetcore-exceptionhandler-build .
+      - run: docker create --name aspnetcore-exceptionhandler-build aspnetcore-exceptionhandler-build
+      - run: docker cp aspnetcore-exceptionhandler-build:/package ./package
+      - run: docker cp aspnetcore-exceptionhandler-build:/testresults/ ./testresults
+      - persist_to_workspace:
+          root: ~/Frogvall/aspnetcore-exceptionhandler
+          paths:
+            - package/*.nupkg
+      - store_test_results:
+          path: ./testresults
+  deploy:
+    executor: ci-executor
+    steps:
+      - attach_workspace:
+          at: ~/Frogvall/aspnetcore-exceptionhandler/package
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run: docker run --rm -v ~/Frogvall/aspnetcore-exceptionhandler/package:/data/package schwamster/nuget-docker push /data/package/*.nupkg $Nuget_Api_Key -Source nuget.org
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              ignore: /.*/

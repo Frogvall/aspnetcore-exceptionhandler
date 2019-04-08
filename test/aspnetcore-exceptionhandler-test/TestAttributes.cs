@@ -49,11 +49,31 @@ namespace AspNetCoreApiUtilities.Tests
             _client = server.CreateClient();
         }
 
+        [Fact(Skip = "Used to manually verify caching of SkipModelValidation")]
+        public async Task PostTest_TestCache_ManualVerify()
+        {
+            //Arrange
+            var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 0}}", Encoding.UTF8, "text/json");
+
+            // Act
+            await _client.PostAsync("/api/Test/NoValidation", content);
+            await _client.PostAsync("/api/Test/NoValidation", content);
+
+            await _client.PostAsync("/api/Test", content);
+            await _client.PostAsync("/api/Test", content);
+
+            await _client.PostAsync("/api/Test/NoValidation", content);
+            await _client.PostAsync("/api/Test", content);
+
+        }
+
+
         [Fact]
         public async Task PostTest_NoValidation_ReturnsOk()
         {
             //Arrange
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 0}}", Encoding.UTF8, "text/json");
+            var content2 = new StringContent($@"{{""NullableObject"": ""string""}}", Encoding.UTF8, "text/json");
 
             // Act
             var response = await _client.PostAsync("/api/Test/NoValidation", content);
