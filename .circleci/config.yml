@@ -15,10 +15,10 @@ jobs:
       - run: cd test/aspnetcore-exceptionhandler-test
       - run: dotnet test --test-adapter-path:. --logger:"xunit;LogFilePath=./../../testresults/out.xml"
       - run: cd ../..
-      - run: dotnet pack src/aspnetcore-exceptionhandler/aspnetcore-exceptionhandler.csproj -c release -o ./../../package
-      - run: dotnet pack src/aspnetcore-exceptionhandler-awsxray/aspnetcore-exceptionhandler-awsxray.csproj -c release -o ./../../package
-      - run: dotnet pack src/aspnetcore-exceptionhandler-modelvalidation/aspnetcore-exceptionhandler-modelvalidation.csproj -c release -o ./../../package
-      - run: dotnet pack src/aspnetcore-exceptionhandler-swagger/aspnetcore-exceptionhandler-swagger.csproj -c release -o ./../../package
+      - run: dotnet pack src/aspnetcore-exceptionhandler/aspnetcore-exceptionhandler.csproj -c release -o ./../../package/base
+      - run: dotnet pack src/aspnetcore-exceptionhandler-awsxray/aspnetcore-exceptionhandler-awsxray.csproj -c release -o ./../../package/awsxray
+      - run: dotnet pack src/aspnetcore-exceptionhandler-modelvalidation/aspnetcore-exceptionhandler-modelvalidation.csproj -c release -o ./../../package/modelvalidation
+      - run: dotnet pack src/aspnetcore-exceptionhandler-swagger/aspnetcore-exceptionhandler-swagger.csproj -c release -o ./../../package/swagger
       - persist_to_workspace:
           root: ~/Frogvall/aspnetcore-exceptionhandler
           paths:
@@ -30,7 +30,10 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/Frogvall/aspnetcore-exceptionhandler
-      - run: dotnet nuget push package/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
+      - run: dotnet nuget push package/awsxray/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
+      - run: dotnet nuget push package/modelvalidation/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
+      - run: dotnet nuget push package/swagger/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
+      - run: dotnet nuget push package/base/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
 
 workflows:
   version: 2
