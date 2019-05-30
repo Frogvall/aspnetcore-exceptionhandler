@@ -12,7 +12,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test.TestResources
             return logger;
         }
 
-        class XUnitLogger<T> : ILogger<T>, IDisposable
+        private class XUnitLogger<T> : ILogger<T>, IDisposable
         {
             private readonly Action<string> _output;
 
