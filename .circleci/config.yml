@@ -25,22 +25,55 @@ jobs:
             - package
       - store_test_results:
           path: ./testresults
-  deploy:
+  deploy-base:
     executor: ci-executor
     steps:
       - attach_workspace:
           at: ~/Frogvall/aspnetcore-exceptionhandler
-      - run: dotnet nuget push package/awsxray/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
-      - run: dotnet nuget push package/modelvalidation/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
-      - run: dotnet nuget push package/swagger/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
       - run: dotnet nuget push package/base/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
+  deploy-modelvalidation:
+    executor: ci-executor
+    steps:
+      - attach_workspace:
+          at: ~/Frogvall/aspnetcore-exceptionhandler
+      - run: dotnet nuget push package/modelvalidation/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
+  deploy-swagger:
+    executor: ci-executor
+    steps:
+      - attach_workspace:
+          at: ~/Frogvall/aspnetcore-exceptionhandler
+      - run: dotnet nuget push package/swagger/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
+  deploy-xray:
+    executor: ci-executor
+    steps:
+      - attach_workspace:
+          at: ~/Frogvall/aspnetcore-exceptionhandler
+      - run: dotnet nuget push package/xray/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
 
 workflows:
   version: 2
   build-and-deploy:
     jobs:
       - build
-      - deploy:
+      - deploy-base:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+      - deploy-modelvalidation:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+      - deploy-swagger:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+      - deploy-xray:
           requires:
             - build
           filters:
