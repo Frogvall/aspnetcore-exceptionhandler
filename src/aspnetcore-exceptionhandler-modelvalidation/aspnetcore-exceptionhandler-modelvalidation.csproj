@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>4.0.1</VersionPrefix>
+    <VersionPrefix>4.0.2</VersionPrefix>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Frogvall.AspNetCore.ExceptionHandling</RootNamespace>
     <AssemblyName>ExceptionHandling.ModelValidation</AssemblyName>
