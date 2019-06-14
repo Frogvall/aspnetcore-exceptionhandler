@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
 using System.Net;
 using Frogvall.AspNetCore.ExceptionHandling.Attributes;
 using Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling;
@@ -14,16 +14,16 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Filters
 {
     public sealed class ValidateModelFilter : ActionFilterAttribute
     {
-        private readonly Dictionary<string, bool> _actionSkipValidationCache = new Dictionary<string, bool>();
+        private readonly ConcurrentDictionary<string, bool> _actionSkipValidationCache = new ConcurrentDictionary<string, bool>();
 
         public int ErrorCode { get; set; }
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             var actionId = context.ActionDescriptor?.Id;
-            if (actionId != null && _actionSkipValidationCache.ContainsKey(actionId))
+            if (actionId != null && _actionSkipValidationCache.TryGetValue(actionId, out var skipValidationValidation))
             {
-                if (_actionSkipValidationCache[actionId]) return;
+                if (skipValidationValidation) return;
             }
             else
             {
