@@ -48,7 +48,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/Frogvall/aspnetcore-exceptionhandler
-      - run: dotnet nuget push package/xray/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
+      - run: dotnet nuget push package/awsxray/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
 
 workflows:
   version: 2
