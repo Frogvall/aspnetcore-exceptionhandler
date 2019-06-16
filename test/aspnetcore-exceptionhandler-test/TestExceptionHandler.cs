@@ -16,7 +16,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace AspNetCoreApiUtilities.Tests
+namespace Frogvall.AspNetCore.ExceptionHandling.Test
 {
     public class TestExceptionHandler
     {
@@ -40,7 +40,7 @@ namespace AspNetCoreApiUtilities.Tests
                     services.AddExceptionMapper(new ExceptionMapperOptions
                     {
                         ServiceName = TestServiceName
-                    });
+                    }, GetType());
                     services.AddMvc(options =>
                     {
                         options.Filters.Add(new ValidateModelFilter { ErrorCode = 1337 });

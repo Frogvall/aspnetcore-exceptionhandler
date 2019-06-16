@@ -19,7 +19,7 @@ using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace AspNetCoreApiUtilities.Tests
+namespace Frogvall.AspNetCore.ExceptionHandling.Test
 {
     public class TestAttributes
     {
@@ -43,7 +43,7 @@ namespace AspNetCoreApiUtilities.Tests
                             typeof(ILogger<ValidateModelFilter>),
                             TestLogger.Create<ValidateModelFilter>(_output));
                     services.Replace(descriptor);
-                    services.AddExceptionMapper();
+                    services.AddExceptionMapper(GetType());
                     services.AddMvc(options =>
                     {
                         options.Filters.Add(new ValidateModelFilter { ErrorCode = 1337 });

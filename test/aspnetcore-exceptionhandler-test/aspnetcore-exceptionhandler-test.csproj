@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\src\aspnetcore-exceptionhandler-modelvalidation\aspnetcore-exceptionhandler-modelvalidation.csproj" />
     <ProjectReference Include="..\..\src\aspnetcore-exceptionhandler-swagger\aspnetcore-exceptionhandler-swagger.csproj" />
     <ProjectReference Include="..\..\src\aspnetcore-exceptionhandler\aspnetcore-exceptionhandler.csproj" />
+    <ProjectReference Include="..\..\test\aspnet-core-exceptionhandler-test-mapping-profiles\aspnet-core-exceptionhandler-test-mapping-profiles.csproj" />
   </ItemGroup>
 
 </Project>

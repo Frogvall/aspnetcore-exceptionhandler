@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <RootNamespace>Frogvall.AspNetCore.ExceptionHandling.Test.MappingProfiles</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\aspnetcore-exceptionhandler\aspnetcore-exceptionhandler.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace AspNetCoreApiUtilities.Tests
+namespace Frogvall.AspNetCore.ExceptionHandling.Test
 {
     public class TestStatusCodeDecorator
     {
@@ -27,7 +27,7 @@ namespace AspNetCoreApiUtilities.Tests
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddExceptionMapper().AddMvc();
+                    services.AddExceptionMapper(GetType()).AddMvc();
                 })
                 .Configure(app =>
                 {

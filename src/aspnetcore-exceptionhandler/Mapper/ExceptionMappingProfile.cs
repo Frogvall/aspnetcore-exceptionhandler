@@ -18,13 +18,14 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Mapper
         {
             AddMapping<TException>(exceptionHandlerReturnCode, ex => (int) (object) errorCode.Invoke(ex));
         }
-
-        private void AddMapping<TException>(HttpStatusCode exceptionHandlerReturnCode, Func<TException, int> errorCode)
-            where TException : BaseApiException
+        
+        private void AddMapping<TException>(HttpStatusCode exceptionHandlerReturnCode, Func<TException, int> errorCode) where TException : BaseApiException
         {
             var typeOfTException = typeof(TException);
             if (ExceptionMap.ContainsKey(typeOfTException))
-                throw new ArgumentException($"Duplicate entry. Exception exceptionHandlerReturnCode already added to map: {typeOfTException.FullName}");
+                throw new InvalidOperationException($"Duplicate entry. Exception already added to map: {typeOfTException.FullName}");
+            if ((int)exceptionHandlerReturnCode < 400 || (int)exceptionHandlerReturnCode > 599)
+                throw new ArgumentException($"Invalid http status code: {(int)exceptionHandlerReturnCode} {exceptionHandlerReturnCode.ToString()}. Only 4xx and 5xx status codes are allowed.");
             ExceptionMap.Add(typeOfTException, new ExceptionMapper.ExceptionDescription<TException> { ErrorCode = errorCode, ExceptionHandlerReturnCode = exceptionHandlerReturnCode });
         }
     }

@@ -10,11 +10,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace AspNetCoreApiUtilities.Tests
+namespace Frogvall.AspNetCore.ExceptionHandling.Test
 {
     public class TestHttpResponseMessageExtensions
     {
@@ -31,7 +30,7 @@ namespace AspNetCoreApiUtilities.Tests
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddExceptionMapper();
+                    services.AddExceptionMapper(GetType());
                     services.AddMvc(options =>
                     {
                         options.Filters.Add(new ValidateModelFilter {ErrorCode = 1337});
