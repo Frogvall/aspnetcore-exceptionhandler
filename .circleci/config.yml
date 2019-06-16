@@ -43,7 +43,7 @@ jobs:
       - attach_workspace:
           at: ~/Frogvall/aspnetcore-exceptionhandler
       - run: dotnet nuget push package/swagger/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
-  deploy-xray:
+  deploy-awsxray:
     executor: ci-executor
     steps:
       - attach_workspace:
@@ -86,13 +86,13 @@ workflows:
                 - /^swagger-v.*/
             branches:
               ignore: /.*/
-      - deploy-xray:
+      - deploy-awsxray:
           requires:
             - build
           filters:
             tags:
               only:
                 - /^v.*/
-                - /^xray-v.*/
+                - /^awsxray-v.*/
             branches:
               ignore: /.*/
