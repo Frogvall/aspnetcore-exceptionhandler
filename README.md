@@ -1,7 +1,10 @@
 # AspNetCore ExceptionHandler
 
 [![CircleCI](https://circleci.com/gh/Frogvall/aspnetcore-exceptionhandler/tree/master.svg?style=svg)](https://circleci.com/gh/Frogvall/aspnetcore-exceptionhandler/tree/master)
-![#](https://img.shields.io/nuget/v/Frogvall.AspNetCore.ExceptionHandling.svg)
+[![Nuget](https://img.shields.io/nuget/v/Frogvall.AspNetCore.ExceptionHandling.svg?label=ExceptionHandler)](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling/)
+[![Nuget](https://img.shields.io/nuget/v/Frogvall.AspNetCore.ExceptionHandling.ModelValidation.svg?label=ModelValidation)](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.ModelValidation/)
+[![Nuget](https://img.shields.io/nuget/v/Frogvall.AspNetCore.ExceptionHandling.Swagger.svg?label=Swagger)](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.Swagger/)
+[![Nuget](https://img.shields.io/nuget/v/Frogvall.AspNetCore.ExceptionHandling.AwsXRay.svg?label=AwsXRay)](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.AwsXRay/)
 
 AspNetCore Exception Handler for asp.net core that include things like an Exception Handler middleware, modelstate validation by attribute, RequireNonDefault attribute for controller models, and swagger operation filters for 400 and 500.
 
