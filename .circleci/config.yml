@@ -54,28 +54,45 @@ workflows:
   version: 2
   build-and-deploy:
     jobs:
-      - build
+      - build:
+          filters:  # required since `deploy-*` has tag filters AND requires `build`
+            tags:
+              only: /.*/
       - deploy-base:
           requires:
             - build
           filters:
+            tags:
+              only: /^v.*/
             branches:
-              only: master
+              ignore: /.*/
       - deploy-modelvalidation:
           requires:
             - build
           filters:
+            tags:
+              only:
+                - /^v.*/
+                - /^modelvalidation-v.*/
             branches:
-              only: master
+              ignore: /.*/
       - deploy-swagger:
           requires:
             - build
           filters:
+            tags:
+              only:
+                - /^v.*/
+                - /^swagger-v.*/
             branches:
-              only: master
+              ignore: /.*/
       - deploy-xray:
           requires:
             - build
           filters:
+            tags:
+              only:
+                - /^v.*/
+                - /^xray-v.*/
             branches:
-              only: master
+              ignore: /.*/
