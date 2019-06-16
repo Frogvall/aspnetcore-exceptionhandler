@@ -53,7 +53,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
             // Act
             var response = await _client.PostAsync("/api/Test", content);
-            var error = await response.ParseApiError();
+            var error = await response.ParseApiErrorAsync();
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -72,7 +72,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
             // Act
             var response = await _client.PostAsync("/api/NoExceptionNo20x", content);
-            var error = await response.ParseApiError();
+            var error = await response.ParseApiErrorAsync();
 
             // Assert
             error.Should().BeNull();
@@ -87,7 +87,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
             // Act
             var response = await _client.PostAsync("/api/Test", content);
-            var error = await response.ParseApiError();
+            var error = await response.ParseApiErrorAsync();
 
             // Assert
             error.Should().BeNull();

@@ -6,7 +6,7 @@ namespace System.Net.Http
 { 
     public static class HttpResponseMessageExtensions
     {
-        public static async Task<ApiError> ParseApiError(this HttpResponseMessage httpResponseMessage)
+        public static async Task<ApiError> ParseApiErrorAsync(this HttpResponseMessage httpResponseMessage)
         {
             //Not an error if successful
             if (httpResponseMessage.IsSuccessStatusCode)
