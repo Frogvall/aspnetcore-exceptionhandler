@@ -109,7 +109,7 @@ Add to swagger spec ->
 To consume the api error from another service using this package in an asynchronous context ->
 ```cs
         var response = await _client.PostAsync(...);
-        var error = await response.ParseApiError();
+        var error = await response.ParseApiErrorAsync();
         if (error != null)
         {
             //Handle api error here
