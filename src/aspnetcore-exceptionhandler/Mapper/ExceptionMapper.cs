@@ -22,7 +22,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Mapper
                     "ExceptionMap", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField)?.GetValue(profileInstance);
                 if (exceptionMap == null) continue;
                 var intersect = _map.Keys.Intersect(exceptionMap.Keys).ToList();
-                if (intersect.Any()) throw new ArgumentException($"Duplicate entry. Exception returnType already added to map: {string.Join(",", intersect)}");
+                if (intersect.Any()) throw new InvalidOperationException($"Duplicate entry. Exceptions already added to map: {string.Join(",", intersect)}");
                 _map = _map.Union(exceptionMap).ToDictionary(pair => pair.Key, pair => pair.Value);
             }
             Options = options;

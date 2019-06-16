@@ -20,7 +20,7 @@ using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace AspNetCoreApiUtilities.Tests
+namespace Frogvall.AspNetCore.ExceptionHandling.Test
 {
     public class TestExceptionFilter
     {
