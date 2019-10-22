@@ -45,7 +45,6 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test.TestResources
         }
 
         [HttpGet("Cancellation")]
-        [SkipModelValidationFilter]
         public IActionResult Cancellation()
         {
             throw new OperationCanceledException();
