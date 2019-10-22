@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using Frogvall.AspNetCore.ExceptionHandling.Attributes;
 using Frogvall.AspNetCore.ExceptionHandling.Exceptions;
 using Microsoft.AspNetCore.Mvc;
@@ -41,6 +42,13 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test.TestResources
         public IActionResult PostTestNoValidation([FromBody] TestDto testDto)
         {
             return Ok();
+        }
+
+        [HttpGet("Cancellation")]
+        [SkipModelValidationFilter]
+        public IActionResult Cancellation()
+        {
+            throw new OperationCanceledException();
         }
     }
 }

@@ -201,5 +201,21 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             ((JObject)error.DeveloperContext).ToObject<TestDeveloperContext>().TestContext.Should().Be(expectedContext);
             error.Service.Should().Be(expectedServiceName);
         }
+
+        [Fact]
+        public async Task GetCancellationTest_Always_ReturnsFault()
+        {
+            //Arrange
+
+            // Act
+            var response = await _client.GetAsync("/api/Test/Cancellation");
+            var error = JsonConvert.DeserializeObject<ApiError>(await response.Content.ReadAsStringAsync());
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+            error.ErrorCode.Should().Be(-1);
+            error.Service.Should().Be(Assembly.GetEntryAssembly().GetName().Name);
+            error.DeveloperContext.Should().BeNull();
+        }
     }
 }

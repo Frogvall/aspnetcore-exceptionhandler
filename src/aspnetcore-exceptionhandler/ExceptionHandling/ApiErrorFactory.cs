@@ -28,12 +28,12 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
 
             switch (ex)
             {
-                case BaseApiException _:
+                case BaseApiException baseApiException:
                     try
                     {
-                        if (mapper.Options.RespondWithDeveloperContext) developerContext = (ex as BaseApiException)?.DeveloperContext;
-                        errorCode = mapper.GetErrorCode(ex as BaseApiException);
-                        statusCode = mapper.GetExceptionHandlerReturnCode(ex as BaseApiException);
+                        if (mapper.Options.RespondWithDeveloperContext) developerContext = baseApiException.DeveloperContext;
+                        errorCode = mapper.GetErrorCode(baseApiException);
+                        statusCode = mapper.GetExceptionHandlerReturnCode(baseApiException);
                         context.Response.StatusCode = (int)statusCode;
                         logger.LogInformation(ex,
                             "Mapped BaseApiException of type {exceptionType} caught by ApiExceptionHandler. Will return with {statusCodeInt} {statusCodeString}. Unexpected: {unexpected}",
@@ -45,12 +45,20 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
                     }
 
                     break;
-                case ApiException _:
+                case ApiException apiException:
                     errorCode = -2;
-                    statusCode = (ex as ApiException).StatusCode;
+                    statusCode = apiException.StatusCode;
                     context.Response.StatusCode = (int)statusCode;
                     logger.LogInformation(ex,
                         "ApiException caught by ApiExceptionHandler with  {statusCodeInt} {statusCodeString}. Unexpected: {unexpected}", (int)statusCode, statusCode.ToString(), false);
+                    break;
+                case OperationCanceledException _:
+                    errorCode = -1;
+                    statusCode = HttpStatusCode.InternalServerError;
+                    context.Response.StatusCode = (int)statusCode;
+                    logger.LogWarning(ex,
+                        "OperationCanceledException exception caught by ApiExceptionHandler. Will return with {statusCodeInt} {statusCodeString}. Unexpected: {unexpected}",
+                        (int)statusCode, statusCode.ToString(), true);
                     break;
                 default:
                     errorCode = -1;
