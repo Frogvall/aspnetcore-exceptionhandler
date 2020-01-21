@@ -1,13 +1,13 @@
-﻿using Swashbuckle.AspNetCore.Swagger;
+﻿using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Frogvall.AspNetCore.ExceptionHandling.OperationFilters
 {
     public class ValidateModelOperationFilter : IOperationFilter
     {
-        public void Apply(Operation operation, OperationFilterContext context)
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
-            operation.Responses.Add("400", new Response { Description = "Bad request" });
+            operation.Responses.Add("400", new OpenApiResponse { Description = "Bad request" });
         }
     }
 }
