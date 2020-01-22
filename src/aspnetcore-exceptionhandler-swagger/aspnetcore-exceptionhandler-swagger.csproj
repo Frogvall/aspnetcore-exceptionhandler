@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>4.2.0</VersionPrefix>
+    <VersionPrefix>5.0.0</VersionPrefix>
+    <VersionSuffix>preview1</VersionSuffix>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Frogvall.AspNetCore.ExceptionHandling</RootNamespace>
     <AssemblyName>ExceptionHandling.Swagger</AssemblyName>
