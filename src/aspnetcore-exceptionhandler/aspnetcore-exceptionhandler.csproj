@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>4.2.0</VersionPrefix>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <VersionPrefix>5.0.0</VersionPrefix>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>Frogvall.AspNetCore.ExceptionHandling</RootNamespace>
     <AssemblyName>ExceptionHandling</AssemblyName>
     <PackageId>Frogvall.AspNetCore.ExceptionHandling</PackageId>
@@ -12,6 +12,6 @@
   <ItemGroup>
     <PackageReference Include="AsyncFriendlyStackTrace" Version="1.6.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
   </ItemGroup>
 </Project>
