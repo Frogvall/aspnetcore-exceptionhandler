@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,20 +15,22 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 {
     public class TestStatusCodeDecorator
     {
-        private HttpClient _client;
 
-        public TestStatusCodeDecorator()
+        private HttpClient SetupServer(string serverType)
         {
-            // Run for every test case
-            SetupServer();
+            switch (serverType) {
+                case "mvc":
+                    return SetupServerWithMvc();
+                default:
+                    throw new NotImplementedException();;
+            }
         }
-
-        private void SetupServer()
+        private HttpClient SetupServerWithMvc()
         {
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddExceptionMapper(GetType()).AddMvc();
+                    services.AddExceptionMapper(GetType()).AddMvc(options => options.EnableEndpointRouting = false);
                 })
                 .Configure(app =>
                 {
@@ -37,69 +40,79 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
                 });
 
             var server = new TestServer(builder);
-            _client = server.CreateClient();
+            return server.CreateClient();
         }
 
-        [Fact]
-        public async Task PostTest_ValidDto_ReturnsOk()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_ValidDto_ReturnsOk(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 1}}", Encoding.UTF8, "text/json");
 
             // Act
-            var response = await _client.PostAsync("/api/Test", content);
+            var response = await client.PostAsync("/api/Test", content);
 
             // Assert
             response.EnsureSuccessStatusCode();
         }
 
-        [Fact]
-        public async Task PostTest_NegativeIntDto_ReturnsInternalServerError()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_NegativeIntDto_ReturnsInternalServerError(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": -1}}", Encoding.UTF8, "text/json");
 
             //Act
-            var response = await _client.PostAsync("/api/Test", content);
+            var response = await client.PostAsync("/api/Test", content);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
         }
 
-        [Fact]
-        public async Task PostTest_DtoIntSetToFour_ReturnsConflict()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_DtoIntSetToFour_ReturnsConflict(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 4}}", Encoding.UTF8, "text/json");
 
             // Act
-            var response = await _client.PostAsync("/api/Test", content);
+            var response = await client.PostAsync("/api/Test", content);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Conflict);
         }
 
-        [Fact]
-        public async Task PostTest_DtoIntSetToThree_ReturnsError()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_DtoIntSetToThree_ReturnsError(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 3}}", Encoding.UTF8, "text/json");
 
             // Act
-            var response = await _client.PostAsync("/api/Test", content);
+            var response = await client.PostAsync("/api/Test", content);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
-        [Fact]
-        public async Task PostTest_DtoIntSetToTwo_ReturnsFault()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_DtoIntSetToTwo_ReturnsFault(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 2}}", Encoding.UTF8, "text/json");
 
             // Act
-            var response = await _client.PostAsync("/api/Test", content);
+            var response = await client.PostAsync("/api/Test", content);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);

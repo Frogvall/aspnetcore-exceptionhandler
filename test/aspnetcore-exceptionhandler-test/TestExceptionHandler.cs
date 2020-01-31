@@ -20,7 +20,6 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 {
     public class TestExceptionHandler
     {
-        private HttpClient _client;
         private Exception _exceptionSetByExceptionListener;
 
         private const string TestServiceName = "TestServiceName";
@@ -29,10 +28,19 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         {
             // Run for every test case
             _exceptionSetByExceptionListener = null;
-            SetupServer();
         }
 
-        private void SetupServer()
+        private HttpClient SetupServer(string serverType)
+        {
+            switch (serverType) {
+                case "mvc":
+                    return SetupServerWithMvc();
+                default:
+                    throw new NotImplementedException();;
+            }
+        }
+
+        private HttpClient SetupServerWithMvc()
         {
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
@@ -43,6 +51,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
                     }, GetType());
                     services.AddMvc(options =>
                     {
+                        options.EnableEndpointRouting = false;
                         options.Filters.Add(new ValidateModelFilter { ErrorCode = 1337 });
                     });
                 })
@@ -54,33 +63,37 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
                 });
 
             var server = new TestServer(builder);
-            _client = server.CreateClient();
+            return server.CreateClient();
         }
 
-        [Fact]
-        public async Task PostTest_ValidDto_ReturnsOk()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_ValidDto_ReturnsOk(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 1}}", Encoding.UTF8, "text/json");
 
             // Act
-            var response = await _client.PostAsync("/api/Test", content);
+            var response = await client.PostAsync("/api/Test", content);
 
             // Assert
             response.EnsureSuccessStatusCode();
         }
 
-        [Fact]
-        public async Task PostTest_NegativeIntDto_ReturnsInternalServerError()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_NegativeIntDto_ReturnsInternalServerError(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var notExpectedHeaderValue = "test-value";
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": -1}}", Encoding.UTF8, "text/json");
             content.Headers.Add(TestAddCustomHeaderMiddleware.TestHeader, new[] { notExpectedHeaderValue });
             var expectedServiceName = TestServiceName;
 
             // Act
-            var response = await _client.PostAsync("/api/Test", content);
+            var response = await client.PostAsync("/api/Test", content);
             var error = JsonConvert.DeserializeObject<ApiError>(await response.Content.ReadAsStringAsync());
 
             // Assert
@@ -92,43 +105,49 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             error.Service.Should().Be(expectedServiceName);
         }
 
-        [Fact]
-        public async Task PostTest_ValidDto_PostTest_DtoIntSetToFive_ExceptionListenerNotSet()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_ValidDto_PostTest_DtoIntSetToFive_ExceptionListenerNotSet(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 1}}", Encoding.UTF8, "text/json");
 
             // Act
-            await _client.PostAsync("/api/Test", content);
+            await client.PostAsync("/api/Test", content);
 
             // Assert
             _exceptionSetByExceptionListener.Should().BeNull();
         }
 
-        [Fact]
-        public async Task PostTest_DtoIntSetToFive_ExceptionListenerSetsException()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_DtoIntSetToFive_ExceptionListenerSetsException(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 5}}", Encoding.UTF8, "text/json");
 
             // Act
-            await _client.PostAsync("/api/Test", content);
+            await client.PostAsync("/api/Test", content);
 
             // Assert
             _exceptionSetByExceptionListener.Should().BeOfType<TestException3>();
         }
 
-        [Fact]
-        public async Task PostTest_DtoIntSetToFive_ReturnsError()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_DtoIntSetToFive_ReturnsError(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var expectedErrorCode = TestEnum.MyThirdValue;
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 5}}", Encoding.UTF8, "text/json");
             const string expectedContext = "Test1";
             var expectedServiceName = TestServiceName;
 
             // Act
-            var response = await _client.PostAsync("/api/Test", content);
+            var response = await client.PostAsync("/api/Test", content);
             var error = JsonConvert.DeserializeObject<ApiError>(await response.Content.ReadAsStringAsync());
 
             // Assert
@@ -138,15 +157,17 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             error.Service.Should().Be(expectedServiceName);
         }
 
-        [Fact]
-        public async Task PostTest_DtoIntSetToFour_ReturnsConflict()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_DtoIntSetToFour_ReturnsConflict(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 4}}", Encoding.UTF8, "text/json");
             var expectedServiceName = TestServiceName;
 
             // Act
-            var response = await _client.PostAsync("/api/Test", content);
+            var response = await client.PostAsync("/api/Test", content);
             var error = JsonConvert.DeserializeObject<ApiError>(await response.Content.ReadAsStringAsync());
 
             // Assert
@@ -156,17 +177,19 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             error.Service.Should().Be(expectedServiceName);
         }
 
-        [Fact]
-        public async Task PostTest_DtoIntSetToThree_ReturnsError()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_DtoIntSetToThree_ReturnsError(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var expectedErrorCode = TestEnum.MyFirstValue;
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 3}}", Encoding.UTF8, "text/json");
             const string expectedContext = "Test1";
             var expectedServiceName = TestServiceName;
 
             // Act
-            var response = await _client.PostAsync("/api/Test", content);
+            var response = await client.PostAsync("/api/Test", content);
             var error = JsonConvert.DeserializeObject<ApiError>(await response.Content.ReadAsStringAsync());
 
             // Assert
@@ -176,17 +199,19 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             error.Service.Should().Be(expectedServiceName);
         }
 
-        [Fact]
-        public async Task PostTest_DtoIntSetToTwo_ReturnsFault()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_DtoIntSetToTwo_ReturnsFault(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var expectedErrorCode = TestEnum.MySecondValue;
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 2}}", Encoding.UTF8, "text/json");
             const string expectedContext = "Test2";
             var expectedServiceName = TestServiceName;
 
             // Act
-            var response = await _client.PostAsync("/api/Test", content);
+            var response = await client.PostAsync("/api/Test", content);
             var error = JsonConvert.DeserializeObject<ApiError>(await response.Content.ReadAsStringAsync());
 
             // Assert
@@ -196,13 +221,15 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             error.Service.Should().Be(expectedServiceName);
         }
 
-        [Fact]
-        public async Task GetCancellationTest_Always_ReturnsFault()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task GetCancellationTest_Always_ReturnsFault(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
 
             // Act
-            var response = await _client.GetAsync("/api/Test/Cancellation");
+            var response = await client.GetAsync("/api/Test/Cancellation");
             var error = JsonConvert.DeserializeObject<ApiError>(await response.Content.ReadAsStringAsync());
 
             // Assert

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -17,15 +18,17 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 {
     public class TestHttpResponseMessageExtensions
     {
-        private HttpClient _client;
-
-        public TestHttpResponseMessageExtensions()
+        private HttpClient SetupServer(string serverType)
         {
-            // Run for every test case
-            SetupServer();
+            switch (serverType) {
+                case "mvc":
+                    return SetupServerWithMvc();
+                default:
+                    throw new NotImplementedException();;
+            }
         }
 
-        private void SetupServer()
+        private HttpClient SetupServerWithMvc()
         {
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
@@ -33,6 +36,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
                     services.AddExceptionMapper(GetType());
                     services.AddMvc(options =>
                     {
+                        options.EnableEndpointRouting = false;
                         options.Filters.Add(new ValidateModelFilter {ErrorCode = 1337});
                         options.Filters.Add(new ApiExceptionFilter());
                     });
@@ -40,19 +44,21 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
                 .Configure(app => { app.UseMvc(); });
 
             var server = new TestServer(builder);
-            _client = server.CreateClient();
+            return server.CreateClient();
         }
 
-        [Fact]
-        public async Task PostTest_ParseAsync_ReturnsValidApiError()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_ParseAsync_ReturnsValidApiError(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var content = new StringContent($@"{{""NullableObject"": ""string""}}", Encoding.UTF8, "text/json");
             const string expectedError = "The NonNullableObject field requires a non-default value.";
             var expectedServiceName = Assembly.GetEntryAssembly().GetName().Name;
 
             // Act
-            var response = await _client.PostAsync("/api/Test", content);
+            var response = await client.PostAsync("/api/Test", content);
             var error = await response.ParseApiErrorAsync();
 
             // Assert
@@ -63,46 +69,52 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             error.Service.Should().Be(expectedServiceName);
         }
 
-        [Fact]
-        public async Task PostTest_ParseAsyncNoApiError_ReturnsNullApiError()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_ParseAsyncNoApiError_ReturnsNullApiError(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 5}}",
                 Encoding.UTF8, "text/json");
 
             // Act
-            var response = await _client.PostAsync("/api/NoExceptionNo20x", content);
+            var response = await client.PostAsync("/api/NoExceptionNo20x", content);
             var error = await response.ParseApiErrorAsync();
 
             // Assert
             error.Should().BeNull();
         }
 
-        [Fact]
-        public async Task PostTest_ParseAsyncOnSuccessfulResponse_ReturnsNullApiError()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_ParseAsyncOnSuccessfulResponse_ReturnsNullApiError(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 1}}",
                 Encoding.UTF8, "text/json");
 
             // Act
-            var response = await _client.PostAsync("/api/Test", content);
+            var response = await client.PostAsync("/api/Test", content);
             var error = await response.ParseApiErrorAsync();
 
             // Assert
             error.Should().BeNull();
         }
 
-        [Fact]
-        public async Task PostTest_ParseSync_ReturnsValidApiError()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_ParseSync_ReturnsValidApiError(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var content = new StringContent($@"{{""NullableObject"": ""string""}}", Encoding.UTF8, "text/json");
             const string expectedError = "The NonNullableObject field requires a non-default value.";
             var expectedServiceName = Assembly.GetEntryAssembly().GetName().Name;
 
             // Act
-            var response = await _client.PostAsync("/api/Test", content);
+            var response = await client.PostAsync("/api/Test", content);
             var success = response.TryParseApiError(out var error);
 
             // Assert
@@ -114,15 +126,17 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             error.Service.Should().Be(expectedServiceName);
         }
 
-        [Fact]
-        public async Task PostTest_ParseSyncNoApiError_ReturnsNullApiError()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_ParseSyncNoApiError_ReturnsNullApiError(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 5}}",
                 Encoding.UTF8, "text/json");
 
             // Act
-            var response = await _client.PostAsync("/api/NoExceptionNo20x", content);
+            var response = await client.PostAsync("/api/NoExceptionNo20x", content);
             var success = response.TryParseApiError(out var error);
 
             // Assert
@@ -130,15 +144,17 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             error.Should().BeNull();
         }
 
-        [Fact]
-        public async Task PostTest_ParseSyncOnSuccessfulResponse_ReturnsNullApiError()
+        [Theory]
+        [InlineData("mvc")]
+        public async Task PostTest_ParseSyncOnSuccessfulResponse_ReturnsNullApiError(string serverType)
         {
             //Arrange
+            var client = SetupServer(serverType);
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 1}}",
                 Encoding.UTF8, "text/json");
 
             // Act
-            var response = await _client.PostAsync("/api/Test", content);
+            var response = await client.PostAsync("/api/Test", content);
             var success = response.TryParseApiError(out var error);
 
             // Assert
