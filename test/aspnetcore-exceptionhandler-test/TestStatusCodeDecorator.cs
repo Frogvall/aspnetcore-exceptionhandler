@@ -4,17 +4,25 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Frogvall.AspNetCore.ExceptionHandling.Test.Helpers;
 using Frogvall.AspNetCore.ExceptionHandling.Test.TestResources;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Frogvall.AspNetCore.ExceptionHandling.Test
 {
     public class TestStatusCodeDecorator
     {
+        private readonly ITestOutputHelper _output;
+
+        public TestStatusCodeDecorator(ITestOutputHelper output)
+        {
+            _output = output;
+        }
 
         private HttpClient SetupServer(string serverType)
         {
@@ -27,20 +35,16 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
         private HttpClient SetupServerWithMvc()
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
-                {
-                    services.AddExceptionMapper(GetType()).AddMvc(options => options.EnableEndpointRouting = false);
-                })
-                .Configure(app =>
+            return ServerHelper.SetupServerWithMvc(
+                options => options.EnableEndpointRouting = false,
+                app =>
                 {
                     app.UseMiddleware<TestExceptionSwallowerMiddleware>();
                     app.UseExceptionStatusCodeDecorator();
                     app.UseMvc();
-                });
-
-            var server = new TestServer(builder);
-            return server.CreateClient();
+                },
+                _output
+            );
         }
 
         [Theory]

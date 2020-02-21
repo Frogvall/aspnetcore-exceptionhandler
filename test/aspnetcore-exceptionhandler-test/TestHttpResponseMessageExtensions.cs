@@ -7,17 +7,26 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Frogvall.AspNetCore.ExceptionHandling.Filters;
+using Frogvall.AspNetCore.ExceptionHandling.Test.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Frogvall.AspNetCore.ExceptionHandling.Test
 {
     public class TestHttpResponseMessageExtensions
     {
+        private readonly ITestOutputHelper _output;
+
+        public TestHttpResponseMessageExtensions(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         private HttpClient SetupServer(string serverType)
         {
             switch (serverType) {
@@ -30,21 +39,16 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
         private HttpClient SetupServerWithMvc()
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            return ServerHelper.SetupServerWithMvc(
+                options =>
                 {
-                    services.AddExceptionMapper(GetType());
-                    services.AddMvc(options =>
-                    {
-                        options.EnableEndpointRouting = false;
-                        options.Filters.Add(new ValidateModelFilter {ErrorCode = 1337});
-                        options.Filters.Add(new ApiExceptionFilter());
-                    });
-                })
-                .Configure(app => { app.UseMvc(); });
-
-            var server = new TestServer(builder);
-            return server.CreateClient();
+                    options.EnableEndpointRouting = false;
+                    options.Filters.Add(new ValidateModelFilter {ErrorCode = 1337});
+                    options.Filters.Add(new ApiExceptionFilter());
+                },
+                app => { app.UseMvc(); },
+                _output
+                );
         }
 
         [Theory]

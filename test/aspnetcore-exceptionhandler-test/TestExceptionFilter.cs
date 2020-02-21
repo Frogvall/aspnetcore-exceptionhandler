@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling;
 using Frogvall.AspNetCore.ExceptionHandling.Filters;
+using Frogvall.AspNetCore.ExceptionHandling.Test.Helpers;
 using Frogvall.AspNetCore.ExceptionHandling.Test.TestResources;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -39,6 +40,8 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             switch (serverType) {
                 case "mvc":
                     return SetupServerWithMvc();
+                case "controllers":
+                    return SetupServerWithControllers();
                 default:
                     throw new NotImplementedException();;
             }
@@ -46,34 +49,45 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
         private HttpClient SetupServerWithMvc()
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            return ServerHelper.SetupServerWithMvc(
+                options =>
                 {
-                    var descriptor =
-                        new ServiceDescriptor(
-                            typeof(ILogger<ApiExceptionFilter>),
-                            TestLogger.Create<ApiExceptionFilter>(_output));
-                    services.Replace(descriptor);
-                    services.AddExceptionMapper(GetType());
-                    services.AddMvc(options =>
-                    {
-                        options.EnableEndpointRouting = false;
-                        options.Filters.Add(new ValidateModelFilter {ErrorCode = 1337});
-                        options.Filters.Add(new ApiExceptionFilter(ex => _exceptionSetByExceptionListener = ex));
-                    });
-                })
-                .Configure(app =>
+                    options.EnableEndpointRouting = false;
+                    options.Filters.Add(new ValidateModelFilter {ErrorCode = 1337});
+                    options.Filters.Add(new ApiExceptionFilter(ex => _exceptionSetByExceptionListener = ex));
+                },
+                app =>
                 {
                     app.UseMiddleware<TestAddCustomHeaderMiddleware>();
                     app.UseMvc();
-                });
+                },
+                _output);
+        }
 
-            var server = new TestServer(builder);
-            return server.CreateClient();
+        private HttpClient SetupServerWithControllers()
+        {
+            return ServerHelper.SetupServerWithMvc(options =>
+                {
+                    options.EnableEndpointRouting = false;
+                    options.Filters.Add(new ValidateModelFilter { ErrorCode = 1337 });
+                    options.Filters.Add(new ApiExceptionFilter(ex => _exceptionSetByExceptionListener = ex));
+                },
+                app =>
+                {
+                    app.UseMiddleware<TestAddCustomHeaderMiddleware>();
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapControllers();
+                    });
+
+                },
+                _output);
         }
 
         [Theory]
         [InlineData("mvc")]
+        [InlineData("controllers")]
         public async Task PostTest_ValidDto_ReturnsOk(string serverType)
         {
             //Arrange
@@ -89,6 +103,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
         [Theory]
         [InlineData("mvc")]
+        [InlineData("controllers")]
         public async Task PostTest_NegativeIntDto_ReturnsInternalServerError(string serverType)
         {
             //Arrange
@@ -113,6 +128,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
         [Theory]
         [InlineData("mvc")]
+        [InlineData("controllers")]
         public async Task PostTest_ValidDto_PostTest_DtoIntSetToFive_ExceptionListenerNotSet(string serverType)
         {
             //Arrange
@@ -128,6 +144,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
         [Theory]
         [InlineData("mvc")]
+        [InlineData("controllers")]
         public async Task PostTest_DtoIntSetToFive_ExceptionListenerSetsException(string serverType)
         {
             //Arrange
@@ -143,6 +160,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
         [Theory]
         [InlineData("mvc")]
+        [InlineData("controllers")]
         public async Task PostTest_DtoIntSetToFive_ReturnsError(string serverType)
         {
             //Arrange
@@ -165,6 +183,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
         [Theory]
         [InlineData("mvc")]
+        [InlineData("controllers")]
         public async Task PostTest_DtoIntSetToFour_ReturnsConflict(string serverType)
         {
             //Arrange
@@ -185,6 +204,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
         [Theory]
         [InlineData("mvc")]
+        [InlineData("controllers")]
         public async Task PostTest_DtoIntSetToThree_ReturnsError(string serverType)
         {
             //Arrange
@@ -207,6 +227,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
         [Theory]
         [InlineData("mvc")]
+        [InlineData("controllers")]
         public async Task PostTest_DtoIntSetToTwo_ReturnsFault(string serverType)
         {
             //Arrange
@@ -229,6 +250,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
         [Theory]
         [InlineData("mvc")]
+        [InlineData("controllers")]
         public async Task GetCancellationTest_Always_ReturnsFault(string serverType)
         {
             //Arrange

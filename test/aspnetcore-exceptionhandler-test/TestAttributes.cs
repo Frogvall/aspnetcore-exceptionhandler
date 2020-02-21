@@ -8,9 +8,11 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling;
 using Frogvall.AspNetCore.ExceptionHandling.Filters;
+using Frogvall.AspNetCore.ExceptionHandling.Test.Helpers;
 using Frogvall.AspNetCore.ExceptionHandling.Test.TestResources;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -36,40 +38,51 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             switch (serverType) {
                 case "mvc":
                     return SetupServerWithMvc();
+                case "controllers":
+                    return SetupServerWithControllers();
                 default:
                     throw new NotImplementedException();;
             }
         }
-        private HttpClient SetupServerWithMvc() 
+        private HttpClient SetupServerWithMvc()
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            return ServerHelper.SetupServerWithMvc(options =>
                 {
-                    var descriptor =
-                        new ServiceDescriptor(
-                            typeof(ILogger<ValidateModelFilter>),
-                            TestLogger.Create<ValidateModelFilter>(_output));
-                    services.Replace(descriptor);
-                    services.AddExceptionMapper(GetType());
-                    services.AddMvc(options =>
-                    {
-                        options.EnableEndpointRouting = false;
-                        options.Filters.Add(new ValidateModelFilter { ErrorCode = 1337 });
-                    });
-                })
-                .Configure(app =>
+                    options.EnableEndpointRouting = false;
+                    options.Filters.Add(new ValidateModelFilter { ErrorCode = 1337 });
+                },
+                app =>
                 {
                     app.UseApiExceptionHandler();
                     app.UseExceptionStatusCodeDecorator();
                     app.UseMvc();
-                });
+                },
+                _output);
+        }
 
-            var server = new TestServer(builder);
-            return server.CreateClient();
+        private HttpClient SetupServerWithControllers()
+        {
+            return ServerHelper.SetupServerWithMvc(options =>
+                {
+                    options.Filters.Add(new ValidateModelFilter { ErrorCode = 1337 });
+                },
+                app =>
+                {
+                    app.UseApiExceptionHandler();
+                    app.UseExceptionStatusCodeDecorator();
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapControllers();
+                    });
+
+                },
+                _output);
         }
 
         [Theory(Skip = "Used to manually verify caching of SkipModelValidation")]
         [InlineData("mvc")]
+        [InlineData("controllers")]
         public async Task PostTest_TestCache_ManualVerify(string serverType)
         {            
             //Arrange
@@ -91,6 +104,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
         [Theory]
         [InlineData("mvc")]
+        [InlineData("controllers")]
         public async Task PostTest_NoValidation_ReturnsOk(string serverType)
         {
             //Arrange
@@ -107,6 +121,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
         [Theory]
         [InlineData("mvc")]
+        [InlineData("controllers")]
         public async Task PostTest_DefaultIntDto_ReturnsBadRequest(string serverType)
         {
             //Arrange
@@ -128,6 +143,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
         [Theory]
         [InlineData("mvc")]
+        [InlineData("controllers")]
         public async Task PostTest_NoIntDto_ReturnsBadRequest(string serverType)
         {
             //Arrange
@@ -149,6 +165,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
         [Theory]
         [InlineData("mvc")]
+        [InlineData("controllers")]
         public async Task PostTest_NoStringDto_ReturnsBadRequest(string serverType)
         {
             //Arrange

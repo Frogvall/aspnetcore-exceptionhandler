@@ -7,6 +7,7 @@ using FluentAssertions;
 using Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling;
 using Frogvall.AspNetCore.ExceptionHandling.Filters;
 using Frogvall.AspNetCore.ExceptionHandling.Mapper;
+using Frogvall.AspNetCore.ExceptionHandling.Test.Helpers;
 using Frogvall.AspNetCore.ExceptionHandling.Test.TestResources;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -15,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Frogvall.AspNetCore.ExceptionHandling.Test
 {
@@ -24,9 +26,11 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
         private const string TestServiceName = "TestServiceName";
 
-        public TestExceptionHandler()
+        private readonly ITestOutputHelper _output;
+
+        public TestExceptionHandler(ITestOutputHelper output)
         {
-            // Run for every test case
+            _output = output;
             _exceptionSetByExceptionListener = null;
         }
 
@@ -42,28 +46,23 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
         private HttpClient SetupServerWithMvc()
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            return ServerHelper.SetupServerWithMvc(
+                options =>
                 {
-                    services.AddExceptionMapper(new ExceptionMapperOptions
-                    {
-                        ServiceName = TestServiceName
-                    }, GetType());
-                    services.AddMvc(options =>
-                    {
-                        options.EnableEndpointRouting = false;
-                        options.Filters.Add(new ValidateModelFilter { ErrorCode = 1337 });
-                    });
-                })
-                .Configure(app =>
+                    options.EnableEndpointRouting = false;
+                    options.Filters.Add(new ValidateModelFilter {ErrorCode = 1337});
+                },
+                app =>
                 {
                     app.UseApiExceptionHandler(ex => _exceptionSetByExceptionListener = ex);
                     app.UseMiddleware<TestAddCustomHeaderMiddleware>();
                     app.UseMvc();
+                },
+                _output,
+                new ExceptionMapperOptions
+                {
+                    ServiceName = TestServiceName
                 });
-
-            var server = new TestServer(builder);
-            return server.CreateClient();
         }
 
         [Theory]
