@@ -9,9 +9,6 @@ using FluentAssertions;
 using Frogvall.AspNetCore.ExceptionHandling.Filters;
 using Frogvall.AspNetCore.ExceptionHandling.Test.Helpers;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -27,11 +24,13 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             _output = output;
         }
 
-        private HttpClient SetupServer(string serverType)
+        private HttpClient SetupServer(ServerType serverType)
         {
             switch (serverType) {
-                case "mvc":
+                case ServerType.Mvc:
                     return SetupServerWithMvc();
+                case ServerType.Controllers:
+                    return SetupServerWithControllers();
                 default:
                     throw new NotImplementedException();;
             }
@@ -51,9 +50,31 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
                 );
         }
 
+        private HttpClient SetupServerWithControllers()
+        {
+            return ServerHelper.SetupServerWithControllers(
+                options =>
+                {
+                    options.EnableEndpointRouting = false;
+                    options.Filters.Add(new ValidateModelFilter {ErrorCode = 1337});
+                    options.Filters.Add(new ApiExceptionFilter());
+                },
+                app => 
+                { 
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapControllers();
+                    });    
+                },
+                _output
+                );
+        }
+
         [Theory]
-        [InlineData("mvc")]
-        public async Task PostTest_ParseAsync_ReturnsValidApiError(string serverType)
+        [InlineData(ServerType.Mvc)]
+        [InlineData(ServerType.Controllers)]
+        public async Task PostTest_ParseAsync_ReturnsValidApiError(ServerType serverType)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -74,8 +95,9 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData("mvc")]
-        public async Task PostTest_ParseAsyncNoApiError_ReturnsNullApiError(string serverType)
+        [InlineData(ServerType.Mvc)]
+        [InlineData(ServerType.Controllers)]
+        public async Task PostTest_ParseAsyncNoApiError_ReturnsNullApiError(ServerType serverType)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -91,8 +113,9 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData("mvc")]
-        public async Task PostTest_ParseAsyncOnSuccessfulResponse_ReturnsNullApiError(string serverType)
+        [InlineData(ServerType.Mvc)]
+        [InlineData(ServerType.Controllers)]
+        public async Task PostTest_ParseAsyncOnSuccessfulResponse_ReturnsNullApiError(ServerType serverType)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -108,8 +131,9 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData("mvc")]
-        public async Task PostTest_ParseSync_ReturnsValidApiError(string serverType)
+        [InlineData(ServerType.Mvc)]
+        [InlineData(ServerType.Controllers)]
+        public async Task PostTest_ParseSync_ReturnsValidApiError(ServerType serverType)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -131,8 +155,9 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData("mvc")]
-        public async Task PostTest_ParseSyncNoApiError_ReturnsNullApiError(string serverType)
+        [InlineData(ServerType.Mvc)]
+        [InlineData(ServerType.Controllers)]
+        public async Task PostTest_ParseSyncNoApiError_ReturnsNullApiError(ServerType serverType)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -149,8 +174,9 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData("mvc")]
-        public async Task PostTest_ParseSyncOnSuccessfulResponse_ReturnsNullApiError(string serverType)
+        [InlineData(ServerType.Mvc)]
+        [InlineData(ServerType.Controllers)]
+        public async Task PostTest_ParseSyncOnSuccessfulResponse_ReturnsNullApiError(ServerType serverType)
         {
             //Arrange
             var client = SetupServer(serverType);

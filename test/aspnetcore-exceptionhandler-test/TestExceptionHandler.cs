@@ -10,9 +10,6 @@ using Frogvall.AspNetCore.ExceptionHandling.Mapper;
 using Frogvall.AspNetCore.ExceptionHandling.Test.Helpers;
 using Frogvall.AspNetCore.ExceptionHandling.Test.TestResources;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -34,11 +31,13 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             _exceptionSetByExceptionListener = null;
         }
 
-        private HttpClient SetupServer(string serverType)
+        private HttpClient SetupServer(ServerType serverType)
         {
             switch (serverType) {
-                case "mvc":
+                case ServerType.Mvc:
                     return SetupServerWithMvc();
+                case ServerType.Controllers:
+                    return SetupServerWithControllers();
                 default:
                     throw new NotImplementedException();;
             }
@@ -65,9 +64,35 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
                 });
         }
 
+        private HttpClient SetupServerWithControllers()
+        {
+            return ServerHelper.SetupServerWithControllers(
+                options =>
+                {
+                    options.EnableEndpointRouting = false;
+                    options.Filters.Add(new ValidateModelFilter {ErrorCode = 1337});
+                },
+                app =>
+                {
+                    app.UseApiExceptionHandler(ex => _exceptionSetByExceptionListener = ex);
+                    app.UseMiddleware<TestAddCustomHeaderMiddleware>();
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapControllers();
+                    });
+                },
+                _output,
+                new ExceptionMapperOptions
+                {
+                    ServiceName = TestServiceName
+                });
+        }
+
         [Theory]
-        [InlineData("mvc")]
-        public async Task PostTest_ValidDto_ReturnsOk(string serverType)
+        [InlineData(ServerType.Mvc)]
+        [InlineData(ServerType.Controllers)]
+        public async Task PostTest_ValidDto_ReturnsOk(ServerType serverType)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -81,8 +106,9 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData("mvc")]
-        public async Task PostTest_NegativeIntDto_ReturnsInternalServerError(string serverType)
+        [InlineData(ServerType.Mvc)]
+        [InlineData(ServerType.Controllers)]
+        public async Task PostTest_NegativeIntDto_ReturnsInternalServerError(ServerType serverType)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -105,8 +131,9 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData("mvc")]
-        public async Task PostTest_ValidDto_PostTest_DtoIntSetToFive_ExceptionListenerNotSet(string serverType)
+        [InlineData(ServerType.Mvc)]
+        [InlineData(ServerType.Controllers)]
+        public async Task PostTest_ValidDto_PostTest_DtoIntSetToFive_ExceptionListenerNotSet(ServerType serverType)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -120,8 +147,9 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData("mvc")]
-        public async Task PostTest_DtoIntSetToFive_ExceptionListenerSetsException(string serverType)
+        [InlineData(ServerType.Mvc)]
+        [InlineData(ServerType.Controllers)]
+        public async Task PostTest_DtoIntSetToFive_ExceptionListenerSetsException(ServerType serverType)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -135,8 +163,9 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData("mvc")]
-        public async Task PostTest_DtoIntSetToFive_ReturnsError(string serverType)
+        [InlineData(ServerType.Mvc)]
+        [InlineData(ServerType.Controllers)]
+        public async Task PostTest_DtoIntSetToFive_ReturnsError(ServerType serverType)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -157,8 +186,9 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData("mvc")]
-        public async Task PostTest_DtoIntSetToFour_ReturnsConflict(string serverType)
+        [InlineData(ServerType.Mvc)]
+        [InlineData(ServerType.Controllers)]
+        public async Task PostTest_DtoIntSetToFour_ReturnsConflict(ServerType serverType)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -177,8 +207,9 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData("mvc")]
-        public async Task PostTest_DtoIntSetToThree_ReturnsError(string serverType)
+        [InlineData(ServerType.Mvc)]
+        [InlineData(ServerType.Controllers)]
+        public async Task PostTest_DtoIntSetToThree_ReturnsError(ServerType serverType)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -199,8 +230,9 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData("mvc")]
-        public async Task PostTest_DtoIntSetToTwo_ReturnsFault(string serverType)
+        [InlineData(ServerType.Mvc)]
+        [InlineData(ServerType.Controllers)]
+        public async Task PostTest_DtoIntSetToTwo_ReturnsFault(ServerType serverType)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -221,8 +253,9 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData("mvc")]
-        public async Task GetCancellationTest_Always_ReturnsFault(string serverType)
+        [InlineData(ServerType.Mvc)]
+        [InlineData(ServerType.Controllers)]
+        public async Task GetCancellationTest_Always_ReturnsFault(ServerType serverType)
         {
             //Arrange
             var client = SetupServer(serverType);
