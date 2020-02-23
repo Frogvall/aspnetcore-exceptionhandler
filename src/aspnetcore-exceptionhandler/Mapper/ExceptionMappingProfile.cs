@@ -11,12 +11,16 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Mapper
 
         protected void AddMapping<TException>(HttpStatusCode exceptionHandlerReturnCode, TErrorCode errorCode) where TException : BaseApiException
         {
-            AddMapping<TException>(exceptionHandlerReturnCode, ex => (int)(object)errorCode, ex => typeof(TErrorCode).FullName);
+            AddMapping<TException>(exceptionHandlerReturnCode, ex => (int)(object)errorCode, ex => $"{typeof(TErrorCode).FullName}.{errorCode.ToString()}");
         }
 
         protected void AddMapping<TException>(HttpStatusCode exceptionHandlerReturnCode, Func<TException, TErrorCode> errorCode) where TException : BaseApiException
         {
-            AddMapping<TException>(exceptionHandlerReturnCode, ex => (int) (object) errorCode.Invoke(ex), ex => errorCode.Invoke(ex).GetType().FullName);
+            AddMapping<TException>(exceptionHandlerReturnCode, ex => (int) (object) errorCode.Invoke(ex), ex => 
+            {
+                var error = errorCode.Invoke(ex);
+                return $"{error.GetType().FullName}.{error.ToString()}";
+            });
         }
         
         private void AddMapping<TException>(HttpStatusCode exceptionHandlerReturnCode, Func<TException, int> errorCode, Func<TException, string> error) where TException : BaseApiException

@@ -20,6 +20,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
     public class TestAttributes
     {
         private readonly ITestOutputHelper _output;
+        private const string ValidationError = "Frogvall.AspNetCore.ExceptionHandling.ModelValidationError"; 
 
         public TestAttributes(ITestOutputHelper output)
         {
@@ -130,6 +131,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.ErrorCode.Should().Be(1337);
+            error.Error.Should().Be(ValidationError);
             ((JObject)error.Context)["NonNullableObject"].ToObject<string[]>().FirstOrDefault().Should().Be(expectedError);
             error.Service.Should().Be(expectedServiceName);
         }
@@ -152,6 +154,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.ErrorCode.Should().Be(1337);
+            error.Error.Should().Be(ValidationError);
             ((JObject)error.Context)["NonNullableObject"].ToObject<string[]>().FirstOrDefault().Should().Be(expectedError);
             error.Service.Should().Be(expectedServiceName);
         }
@@ -174,6 +177,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.ErrorCode.Should().Be(1337);
+            error.Error.Should().Be(ValidationError);
             ((JObject)error.Context)["NullableObject"].ToObject<string[]>().FirstOrDefault().Should().Be(expectedError);
             error.Service.Should().Be(expectedServiceName);
         }

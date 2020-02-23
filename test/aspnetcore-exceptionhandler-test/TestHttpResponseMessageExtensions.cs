@@ -17,6 +17,8 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 {
     public class TestHttpResponseMessageExtensions
     {
+        private const string ValidationError = "Frogvall.AspNetCore.ExceptionHandling.ModelValidationError"; 
+
         private readonly ITestOutputHelper _output;
 
         public TestHttpResponseMessageExtensions(ITestOutputHelper output)
@@ -89,6 +91,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.ErrorCode.Should().Be(1337);
+            error.Error.Should().Be(ValidationError);
             ((JObject) error.Context)["NonNullableObject"].ToObject<string[]>().FirstOrDefault().Should()
                 .Be(expectedError);
             error.Service.Should().Be(expectedServiceName);
@@ -149,6 +152,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             success.Should().Be(true);
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.ErrorCode.Should().Be(1337);
+            error.Error.Should().Be(ValidationError);
             ((JObject) error.Context)["NonNullableObject"].ToObject<string[]>().FirstOrDefault().Should()
                 .Be(expectedError);
             error.Service.Should().Be(expectedServiceName);

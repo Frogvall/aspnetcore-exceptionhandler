@@ -48,7 +48,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
 
                     break;
                 case OperationCanceledException _:
-                    errorObject = (-1, typeof(OperationCanceledException).FullName);
+                    errorObject = (-1, "Frogvall.AspNetCore.ExceptionHandling.OperationCanceled");
                     statusCode = HttpStatusCode.InternalServerError;
                     context.Response.StatusCode = (int)statusCode;
                     logger.LogWarning(ex,
@@ -56,7 +56,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
                         (int)statusCode, statusCode.ToString(), true);
                     break;
                 default:
-                    errorObject = (-1, typeof(Exception).FullName);
+                    errorObject = (-1, "Frogvall.AspNetCore.ExceptionHandling.InternalServerError");
                     statusCode = HttpStatusCode.InternalServerError;
                     context.Response.StatusCode = (int)statusCode;
                     logger.LogError(ex,
