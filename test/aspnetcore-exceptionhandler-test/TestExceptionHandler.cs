@@ -218,7 +218,8 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.ErrorCode.Should().Be((int)expectedErrorCode);
-            ((JObject)error.DeveloperContext).ToObject<TestDeveloperContext>().TestContext.Should().Be(expectedContext);
+            ((JObject)error.Context).ToObject<TestContext>().TestValue.Should().Be(expectedContext);
+            ((JObject)error.DeveloperContext).ToObject<TestDeveloperContext>().TestValue.Should().Be(expectedContext);
             error.Service.Should().Be(expectedServiceName);
         }
 
@@ -243,7 +244,8 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.ErrorCode.Should().Be((int)expectedErrorCode);
-            ((JObject)error.DeveloperContext).ToObject<TestDeveloperContext>().TestContext.Should().Be(expectedContext);
+            ((JObject)error.Context).ToObject<TestContext>().TestValue.Should().Be(expectedContext);
+            ((JObject)error.DeveloperContext).ToObject<TestDeveloperContext>().TestValue.Should().Be(expectedContext);
             error.Service.Should().Be(expectedServiceName);
         }
 
@@ -268,7 +270,8 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
             error.ErrorCode.Should().Be((int)expectedErrorCode);
-            ((JObject)error.DeveloperContext).ToObject<TestDeveloperContext>().TestContext.Should().Be(expectedContext);
+            ((JObject)error.Context).ToObject<TestContext>().TestValue.Should().Be(expectedContext);
+            ((JObject)error.DeveloperContext).ToObject<TestDeveloperContext>().TestValue.Should().Be(expectedContext);
             error.Service.Should().Be(expectedServiceName);
         }
 

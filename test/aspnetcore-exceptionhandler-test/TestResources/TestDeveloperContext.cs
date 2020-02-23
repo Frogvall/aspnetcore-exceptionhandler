@@ -2,6 +2,6 @@
 {
     public class TestDeveloperContext
     {
-        public string TestContext { get; set; }
+        public string TestValue { get; set; }
     }
 }
