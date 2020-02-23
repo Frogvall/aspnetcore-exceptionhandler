@@ -99,22 +99,6 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         [Theory]
         [InlineData(ServerType.Mvc)]
         [InlineData(ServerType.Controllers)]
-        public async Task PostTest_DtoIntSetToFour_ReturnsConflict(ServerType serverType)
-        {
-            //Arrange
-            var client = SetupServer(serverType);
-            var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 4}}", Encoding.UTF8, "text/json");
-
-            // Act
-            var response = await client.PostAsync("/api/Test", content);
-
-            // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.Conflict);
-        }
-
-        [Theory]
-        [InlineData(ServerType.Mvc)]
-        [InlineData(ServerType.Controllers)]
         public async Task PostTest_DtoIntSetToThree_ReturnsError(ServerType serverType)
         {
             //Arrange

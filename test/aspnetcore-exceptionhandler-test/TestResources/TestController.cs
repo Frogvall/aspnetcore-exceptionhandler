@@ -18,11 +18,9 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test.TestResources
                 var provokeException = 1 / zero;
             }
 
-            if (testDto.NonNullableObject > 4)
+            if (testDto.NonNullableObject > 3)
                 throw new TestException3(TestEnum.MyThirdValue, "Object > 4",
                     new TestDeveloperContext {TestContext = "Test1"});
-            if (testDto.NonNullableObject > 3)
-                throw new ApiException(HttpStatusCode.Conflict, "Non-500 statuscode thrown.");
             if (testDto.NonNullableObject > 2)
                 throw new TestException("Object > 2", new TestDeveloperContext {TestContext = "Test1"});
             if (testDto.NonNullableObject > 1)

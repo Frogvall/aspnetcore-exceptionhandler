@@ -35,12 +35,6 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Middleware
                 context.Response.StatusCode = (int)statusCode;
                 throw;
             }
-            catch (ApiException ex)
-            {
-                _logger.LogDebug(ex, "ApiException caught, decorating response status code: {StatusCode}.", ex.StatusCode.ToString());
-                context.Response.StatusCode = (int)ex.StatusCode;
-                throw;
-            }
             catch (Exception ex)
             {
                 _logger.LogDebug(ex, "Exception caught, decorating response status code: {StatusCode}.", HttpStatusCode.InternalServerError.ToString());

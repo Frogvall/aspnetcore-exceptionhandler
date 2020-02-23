@@ -45,13 +45,6 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
                     }
 
                     break;
-                case ApiException apiException:
-                    errorCode = -2;
-                    statusCode = apiException.StatusCode;
-                    context.Response.StatusCode = (int)statusCode;
-                    logger.LogInformation(ex,
-                        "ApiException caught by ApiExceptionHandler with  {statusCodeInt} {statusCodeString}. Unexpected: {unexpected}", (int)statusCode, statusCode.ToString(), false);
-                    break;
                 case OperationCanceledException _:
                     errorCode = -1;
                     statusCode = HttpStatusCode.InternalServerError;
