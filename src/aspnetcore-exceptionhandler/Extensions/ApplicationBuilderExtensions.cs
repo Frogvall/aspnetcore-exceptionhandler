@@ -1,7 +1,7 @@
 ﻿using System;
 using Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling;
 using Frogvall.AspNetCore.ExceptionHandling.Mapper;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 ExceptionHandler = new ApiExceptionHandler(
                     builder.ApplicationServices.GetRequiredService<IExceptionMapper>(),
-                    builder.ApplicationServices.GetRequiredService<IHostingEnvironment>(),
+                    builder.ApplicationServices.GetRequiredService<IHostEnvironment>(),
                     builder.ApplicationServices.GetRequiredService<ILogger<ApiExceptionHandler>>(),
                     exceptionListeners)
                     .ExceptionHandler

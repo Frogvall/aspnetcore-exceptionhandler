@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -14,12 +15,12 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
     internal class ApiExceptionHandler
     {
         private readonly IExceptionMapper _mapper;
-        private readonly IHostingEnvironment _env;
+        private readonly IHostEnvironment _env;
         private readonly ILogger<ApiExceptionHandler> _logger;
         private readonly Action<Exception>[] _exceptionListeners;
         private readonly JsonSerializer _serializer;
 
-        internal ApiExceptionHandler(IExceptionMapper mapper, IHostingEnvironment env,
+        internal ApiExceptionHandler(IExceptionMapper mapper, IHostEnvironment env,
             ILogger<ApiExceptionHandler> logger, Action<Exception>[] exceptionListeners)
         {
             _mapper = mapper;

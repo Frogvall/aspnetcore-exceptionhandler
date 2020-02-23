@@ -19,12 +19,12 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test.TestResources
             }
 
             if (testDto.NonNullableObject > 3)
-                throw new TestException3(TestEnum.MyThirdValue, "Object > 4",
+                throw new TestException3(TestEnum.MyThirdValue, "Object > 4", new {},
                     new TestDeveloperContext {TestContext = "Test1"});
             if (testDto.NonNullableObject > 2)
-                throw new TestException("Object > 2", new TestDeveloperContext {TestContext = "Test1"});
+                throw new TestException("Object > 2", new {}, new TestDeveloperContext {TestContext = "Test1"});
             if (testDto.NonNullableObject > 1)
-                throw new TestException2("Object > 3", new TestDeveloperContext {TestContext = "Test2"});
+                throw new TestException2("Object > 1", new {}, new TestDeveloperContext {TestContext = "Test2"});
             return Ok();
         }
 

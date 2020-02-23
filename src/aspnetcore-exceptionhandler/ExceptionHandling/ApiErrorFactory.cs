@@ -23,8 +23,9 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
             context.Response.ContentType = "application/json";
 
             HttpStatusCode statusCode;
-            int errorCode;
+            (int errorCode, string error) errorObject;
             object developerContext = null;
+            object exceptionContext = new {};
 
             switch (ex)
             {
@@ -32,7 +33,8 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
                     try
                     {
                         if (mapper.Options.RespondWithDeveloperContext) developerContext = baseApiException.DeveloperContext;
-                        errorCode = mapper.GetErrorCode(baseApiException);
+                        exceptionContext = baseApiException.Context;
+                        errorObject = mapper.GetError(baseApiException);
                         statusCode = mapper.GetExceptionHandlerReturnCode(baseApiException);
                         context.Response.StatusCode = (int)statusCode;
                         logger.LogInformation(ex,
@@ -46,7 +48,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
 
                     break;
                 case OperationCanceledException _:
-                    errorCode = -1;
+                    errorObject = (-1, typeof(OperationCanceledException).FullName);
                     statusCode = HttpStatusCode.InternalServerError;
                     context.Response.StatusCode = (int)statusCode;
                     logger.LogWarning(ex,
@@ -54,7 +56,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
                         (int)statusCode, statusCode.ToString(), true);
                     break;
                 default:
-                    errorCode = -1;
+                    errorObject = (-1, typeof(Exception).FullName);
                     statusCode = HttpStatusCode.InternalServerError;
                     context.Response.StatusCode = (int)statusCode;
                     logger.LogError(ex,
@@ -66,8 +68,10 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
             var error = new ApiError(mapper.Options.ServiceName)
             {
                 CorrelationId = context.TraceIdentifier,
+                Context = exceptionContext,
                 DeveloperContext = developerContext,
-                ErrorCode = errorCode,
+                ErrorCode = errorObject.errorCode,
+                Error = errorObject.error
             };
 
             if (isDevelopment)

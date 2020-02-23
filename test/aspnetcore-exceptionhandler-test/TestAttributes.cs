@@ -130,7 +130,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.ErrorCode.Should().Be(1337);
-            ((JObject)error.DeveloperContext)["NonNullableObject"].ToObject<string[]>().FirstOrDefault().Should().Be(expectedError);
+            ((JObject)error.Context)["NonNullableObject"].ToObject<string[]>().FirstOrDefault().Should().Be(expectedError);
             error.Service.Should().Be(expectedServiceName);
         }
 
@@ -152,7 +152,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.ErrorCode.Should().Be(1337);
-            ((JObject)error.DeveloperContext)["NonNullableObject"].ToObject<string[]>().FirstOrDefault().Should().Be(expectedError);
+            ((JObject)error.Context)["NonNullableObject"].ToObject<string[]>().FirstOrDefault().Should().Be(expectedError);
             error.Service.Should().Be(expectedServiceName);
         }
 
@@ -174,7 +174,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.ErrorCode.Should().Be(1337);
-            ((JObject)error.DeveloperContext)["NullableObject"].ToObject<string[]>().FirstOrDefault().Should().Be(expectedError);
+            ((JObject)error.Context)["NullableObject"].ToObject<string[]>().FirstOrDefault().Should().Be(expectedError);
             error.Service.Should().Be(expectedServiceName);
         }
     }

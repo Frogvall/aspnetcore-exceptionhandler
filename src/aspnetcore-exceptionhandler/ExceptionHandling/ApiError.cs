@@ -14,11 +14,13 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
             Service = serviceName;
         }
 
-        public ApiError(int errorCode, object developerContext, string message, string serviceName)
+        public ApiError(int errorCode, string error, object context, object developerContext, string message, string serviceName)
         {
             ErrorCode = errorCode;
+            Error = error;
             Service = serviceName;
             Message = message;
+            Context = context;
             DeveloperContext = developerContext;
         }
 
@@ -30,12 +32,13 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
         /// <param name="modelState"></param>
         /// <param name="correlationId"></param>
         /// <param name="serviceName"></param>
-        public ApiError(int errorCode, ModelStateDictionary modelState, string correlationId, string serviceName)
+        public ApiError(int errorCode, string error, ModelStateDictionary modelState, string correlationId, string serviceName)
         {
             Service = serviceName;
             Message = ModelBindingErrorMessage;
             ErrorCode = errorCode;
-            DeveloperContext = new SerializableError(modelState);
+            Error = error;
+            Context = new SerializableError(modelState);
             CorrelationId = correlationId;
         }
         public string Service { get; set; }
@@ -49,6 +52,11 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
         public string DetailedMessage { get; set; }
 
         public int ErrorCode { get; set; }
+
+        public string Error { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public object Context { get; set; }
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public object DeveloperContext { get; set; }
