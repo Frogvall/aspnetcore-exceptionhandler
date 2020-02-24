@@ -7,9 +7,11 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling;
 using Frogvall.AspNetCore.ExceptionHandling.Filters;
 using Frogvall.AspNetCore.ExceptionHandling.Test.Helpers;
 using Microsoft.AspNetCore.Builder;
+using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,6 +19,12 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 {
     public class TestHttpResponseMessageExtensions
     {
+        public enum JsonParser
+        {
+            NewtonsoftJson,
+            SystemTextJson
+        } 
+
         private const string ValidationError = "Frogvall.AspNetCore.ExceptionHandling.ModelValidationError"; 
 
         private readonly ITestOutputHelper _output;
@@ -74,9 +82,11 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData(ServerType.Mvc)]
-        [InlineData(ServerType.Controllers)]
-        public async Task PostTest_ParseAsync_ReturnsValidApiError(ServerType serverType)
+        [InlineData(ServerType.Mvc, JsonParser.SystemTextJson)]
+        [InlineData(ServerType.Controllers, JsonParser.SystemTextJson)]
+        [InlineData(ServerType.Mvc, JsonParser.NewtonsoftJson)]
+        [InlineData(ServerType.Controllers, JsonParser.NewtonsoftJson)]
+        public async Task PostTest_ParseAsync_ReturnsValidApiError(ServerType serverType, JsonParser jsonParser)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -86,20 +96,39 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
             // Act
             var response = await client.PostAsync("/api/Test", content);
-            var error = await response.ParseApiErrorAsync();
+            var error = new ApiError();
+            switch (jsonParser)
+            {
+                case JsonParser.SystemTextJson:
+                    error = await response.ParseApiErrorAsync();
+                    break;
+                case  JsonParser.NewtonsoftJson:
+                    error = await response.ParseApiErrorUsingNewtonsoftJsonAsync();
+                    break;
+            }
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.ErrorCode.Should().Be(1337);
             error.Error.Should().Be(ValidationError);
-            ((JsonElement)error.Context).GetProperty("NonNullableObject").EnumerateArray().FirstOrDefault().ToString().Should().Be(expectedError);
+            switch (jsonParser)
+            {
+                case JsonParser.SystemTextJson:
+                    ((JsonElement)error.Context).GetProperty("NonNullableObject").EnumerateArray().FirstOrDefault().ToString().Should().Be(expectedError);
+                    break;
+                case  JsonParser.NewtonsoftJson:
+                    ((JObject)error.Context)["NonNullableObject"].ToObject<string[]>().FirstOrDefault().Should().Be(expectedError);
+                    break;
+            }
             error.Service.Should().Be(expectedServiceName);
         }
 
         [Theory]
-        [InlineData(ServerType.Mvc)]
-        [InlineData(ServerType.Controllers)]
-        public async Task PostTest_ParseAsyncNoApiError_ReturnsNullApiError(ServerType serverType)
+        [InlineData(ServerType.Mvc, JsonParser.SystemTextJson)]
+        [InlineData(ServerType.Controllers, JsonParser.SystemTextJson)]
+        [InlineData(ServerType.Mvc, JsonParser.NewtonsoftJson)]
+        [InlineData(ServerType.Controllers, JsonParser.NewtonsoftJson)]
+        public async Task PostTest_ParseAsyncNoApiError_ReturnsNullApiError(ServerType serverType, JsonParser jsonParser)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -108,16 +137,27 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
             // Act
             var response = await client.PostAsync("/api/NoExceptionNo20x", content);
-            var error = await response.ParseApiErrorAsync();
+            var error = new ApiError();
+            switch (jsonParser)
+            {
+                case JsonParser.SystemTextJson:
+                    error = await response.ParseApiErrorAsync();
+                    break;
+                case  JsonParser.NewtonsoftJson:
+                    error = await response.ParseApiErrorUsingNewtonsoftJsonAsync();
+                    break;
+            }
 
             // Assert
             error.Should().BeNull();
         }
 
         [Theory]
-        [InlineData(ServerType.Mvc)]
-        [InlineData(ServerType.Controllers)]
-        public async Task PostTest_ParseAsyncOnSuccessfulResponse_ReturnsNullApiError(ServerType serverType)
+        [InlineData(ServerType.Mvc, JsonParser.SystemTextJson)]
+        [InlineData(ServerType.Controllers, JsonParser.SystemTextJson)]
+        [InlineData(ServerType.Mvc, JsonParser.NewtonsoftJson)]
+        [InlineData(ServerType.Controllers, JsonParser.NewtonsoftJson)]
+        public async Task PostTest_ParseAsyncOnSuccessfulResponse_ReturnsNullApiError(ServerType serverType, JsonParser jsonParser)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -126,16 +166,27 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
             // Act
             var response = await client.PostAsync("/api/Test", content);
-            var error = await response.ParseApiErrorAsync();
+            var error = new ApiError();
+            switch (jsonParser)
+            {
+                case JsonParser.SystemTextJson:
+                    error = await response.ParseApiErrorAsync();
+                    break;
+                case  JsonParser.NewtonsoftJson:
+                    error = await response.ParseApiErrorUsingNewtonsoftJsonAsync();
+                    break;
+            }
 
             // Assert
             error.Should().BeNull();
         }
 
         [Theory]
-        [InlineData(ServerType.Mvc)]
-        [InlineData(ServerType.Controllers)]
-        public async Task PostTest_ParseSync_ReturnsValidApiError(ServerType serverType)
+        [InlineData(ServerType.Mvc, JsonParser.SystemTextJson)]
+        [InlineData(ServerType.Controllers, JsonParser.SystemTextJson)]
+        [InlineData(ServerType.Mvc, JsonParser.NewtonsoftJson)]
+        [InlineData(ServerType.Controllers, JsonParser.NewtonsoftJson)]
+        public async Task PostTest_ParseSync_ReturnsValidApiError(ServerType serverType, JsonParser jsonParser)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -145,22 +196,41 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
             // Act
             var response = await client.PostAsync("/api/Test", content);
-            var success = response.TryParseApiError(out var error);
+            var error = new ApiError();
+            var success = false;
+            switch (jsonParser)
+            {
+                case JsonParser.SystemTextJson:
+                    success = response.TryParseApiError(out error);
+                    break;
+                case  JsonParser.NewtonsoftJson:
+                    success = response.TryParseApiErrorUsingNewtonsoftJson(out error);
+                    break;
+            }
 
             // Assert
-            
-            
+            success.Should().BeTrue();
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.ErrorCode.Should().Be(1337);
             error.Error.Should().Be(ValidationError);
-            ((JsonElement)error.Context).GetProperty("NonNullableObject").EnumerateArray().FirstOrDefault().ToString().Should().Be(expectedError);
+            switch (jsonParser)
+            {
+                case JsonParser.SystemTextJson:
+                    ((JsonElement)error.Context).GetProperty("NonNullableObject").EnumerateArray().FirstOrDefault().ToString().Should().Be(expectedError);
+                    break;
+                case  JsonParser.NewtonsoftJson:
+                    ((JObject)error.Context)["NonNullableObject"].ToObject<string[]>().FirstOrDefault().Should().Be(expectedError);
+                    break;
+            }
             error.Service.Should().Be(expectedServiceName);
         }
 
         [Theory]
-        [InlineData(ServerType.Mvc)]
-        [InlineData(ServerType.Controllers)]
-        public async Task PostTest_ParseSyncNoApiError_ReturnsNullApiError(ServerType serverType)
+        [InlineData(ServerType.Mvc, JsonParser.SystemTextJson)]
+        [InlineData(ServerType.Controllers, JsonParser.SystemTextJson)]
+        [InlineData(ServerType.Mvc, JsonParser.NewtonsoftJson)]
+        [InlineData(ServerType.Controllers, JsonParser.NewtonsoftJson)]
+        public async Task PostTest_ParseSyncNoApiError_ReturnsNullApiError(ServerType serverType, JsonParser jsonParser)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -169,17 +239,29 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
             // Act
             var response = await client.PostAsync("/api/NoExceptionNo20x", content);
-            var success = response.TryParseApiError(out var error);
+            var error = new ApiError();
+            var success = false;
+            switch (jsonParser)
+            {
+                case JsonParser.SystemTextJson:
+                    success = response.TryParseApiError(out error);
+                    break;
+                case  JsonParser.NewtonsoftJson:
+                    success = response.TryParseApiErrorUsingNewtonsoftJson(out error);
+                    break;
+            }
 
             // Assert
-            success.Should().Be(false);
+            success.Should().BeFalse();
             error.Should().BeNull();
         }
 
         [Theory]
-        [InlineData(ServerType.Mvc)]
-        [InlineData(ServerType.Controllers)]
-        public async Task PostTest_ParseSyncOnSuccessfulResponse_ReturnsNullApiError(ServerType serverType)
+        [InlineData(ServerType.Mvc, JsonParser.SystemTextJson)]
+        [InlineData(ServerType.Controllers, JsonParser.SystemTextJson)]
+        [InlineData(ServerType.Mvc, JsonParser.NewtonsoftJson)]
+        [InlineData(ServerType.Controllers, JsonParser.NewtonsoftJson)]
+        public async Task PostTest_ParseSyncOnSuccessfulResponse_ReturnsNullApiError(ServerType serverType, JsonParser jsonParser)
         {
             //Arrange
             var client = SetupServer(serverType);
@@ -188,10 +270,20 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
             // Act
             var response = await client.PostAsync("/api/Test", content);
-            var success = response.TryParseApiError(out var error);
+            var error = new ApiError();
+            var success = false;
+            switch (jsonParser)
+            {
+                case JsonParser.SystemTextJson:
+                    success = response.TryParseApiError(out error);
+                    break;
+                case  JsonParser.NewtonsoftJson:
+                    success = response.TryParseApiErrorUsingNewtonsoftJson(out error);
+                    break;
+            }
 
             // Assert
-            success.Should().Be(false);
+            success.Should().BeFalse();
             error.Should().BeNull();
         }
     }
