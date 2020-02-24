@@ -18,6 +18,7 @@ jobs:
       - run: dotnet pack src/aspnetcore-exceptionhandler/aspnetcore-exceptionhandler.csproj -c release -o ./../../package/base
       - run: dotnet pack src/aspnetcore-exceptionhandler-awsxray/aspnetcore-exceptionhandler-awsxray.csproj -c release -o ./../../package/awsxray
       - run: dotnet pack src/aspnetcore-exceptionhandler-modelvalidation/aspnetcore-exceptionhandler-modelvalidation.csproj -c release -o ./../../package/modelvalidation
+      - run: dotnet pack src/aspnetcore-exceptionhandler-newtonsoftjson/aspnetcore-exceptionhandler-newtonsoftjson.csproj -c release -o ./../../package/newtonsoftjson
       - run: dotnet pack src/aspnetcore-exceptionhandler-swagger/aspnetcore-exceptionhandler-swagger.csproj -c release -o ./../../package/swagger
       - persist_to_workspace:
           root: ~/Frogvall/aspnetcore-exceptionhandler
@@ -31,24 +32,30 @@ jobs:
       - attach_workspace:
           at: ~/Frogvall/aspnetcore-exceptionhandler
       - run: dotnet nuget push package/base/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
-  deploy-modelvalidation:
-    executor: ci-executor
-    steps:
-      - attach_workspace:
-          at: ~/Frogvall/aspnetcore-exceptionhandler
-      - run: dotnet nuget push package/modelvalidation/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
-  deploy-swagger:
-    executor: ci-executor
-    steps:
-      - attach_workspace:
-          at: ~/Frogvall/aspnetcore-exceptionhandler
-      - run: dotnet nuget push package/swagger/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
   deploy-awsxray:
     executor: ci-executor
     steps:
       - attach_workspace:
           at: ~/Frogvall/aspnetcore-exceptionhandler
       - run: dotnet nuget push package/awsxray/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
+  deploy-modelvalidation:
+    executor: ci-executor
+    steps:
+      - attach_workspace:
+          at: ~/Frogvall/aspnetcore-exceptionhandler
+      - run: dotnet nuget push package/modelvalidation/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
+  deploy-newtonsoftjson:
+    executor: ci-executor
+    steps:
+      - attach_workspace:
+          at: ~/Frogvall/aspnetcore-exceptionhandler
+      - run: dotnet nuget push package/newtonsoftjson/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
+  deploy-swagger:
+    executor: ci-executor
+    steps:
+      - attach_workspace:
+          at: ~/Frogvall/aspnetcore-exceptionhandler
+      - run: dotnet nuget push package/swagger/*.nupkg -k $Nuget_Api_Key -s https://api.nuget.org/v3/index.json
 
 workflows:
   version: 2
@@ -66,6 +73,16 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
+      - deploy-awsxray:
+          requires:
+            - build
+          filters:
+            tags:
+              only:
+                - /^v.*/
+                - /^awsxray-v.*/
+            branches:
+              ignore: /.*/
       - deploy-modelvalidation:
           requires:
             - build
@@ -76,6 +93,16 @@ workflows:
                 - /^modelvalidation-v.*/
             branches:
               ignore: /.*/
+      - deploy-newtonsoftjson:
+          requires:
+            - build
+          filters:
+            tags:
+              only:
+                - /^v.*/
+                - /^newtonsoftjson-v.*/
+            branches:
+              ignore: /.*/
       - deploy-swagger:
           requires:
             - build
@@ -84,15 +111,5 @@ workflows:
               only:
                 - /^v.*/
                 - /^swagger-v.*/
-            branches:
-              ignore: /.*/
-      - deploy-awsxray:
-          requires:
-            - build
-          filters:
-            tags:
-              only:
-                - /^v.*/
-                - /^awsxray-v.*/
             branches:
               ignore: /.*/
