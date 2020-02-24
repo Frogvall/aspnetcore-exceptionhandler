@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Text.Json;
+using System.Threading.Tasks;
 using Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling;
-using Newtonsoft.Json;
 
 namespace System.Net.Http
 { 
@@ -14,10 +14,14 @@ namespace System.Net.Http
                 return null;
             }
 
+            var options = new JsonSerializerOptions{
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
             try
             {
                 var responseResult = await httpResponseMessage.Content.ReadAsStringAsync();
-                var error = JsonConvert.DeserializeObject<ApiError>(responseResult);
+                var error = JsonSerializer.Deserialize<ApiError>(responseResult, options);
                 return error;
             }
             catch
@@ -35,10 +39,14 @@ namespace System.Net.Http
                 return false;
             }
 
+            var options = new JsonSerializerOptions{
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
             try
             {
                 var responseResult = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                error = JsonConvert.DeserializeObject<ApiError>(responseResult);
+                error = JsonSerializer.Deserialize<ApiError>(responseResult, options);
                 return error != null;
             }
             catch

@@ -51,7 +51,6 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test.Helpers
                             services.Replace(descriptor);
                             services.AddExceptionMapper(exceptionMapperOptions, typeof(ServerHelper));
                             services.AddControllers(mvcOptions)
-                                .AddNewtonsoftJson()
                                 .AddApplicationPart(typeof(ServerHelper).Assembly);
                         })
                         .Configure(appBuilder);

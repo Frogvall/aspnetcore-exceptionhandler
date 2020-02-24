@@ -4,12 +4,12 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Frogvall.AspNetCore.ExceptionHandling.Filters;
 using Frogvall.AspNetCore.ExceptionHandling.Test.Helpers;
 using Microsoft.AspNetCore.Builder;
-using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -92,8 +92,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.ErrorCode.Should().Be(1337);
             error.Error.Should().Be(ValidationError);
-            ((JObject) error.Context)["NonNullableObject"].ToObject<string[]>().FirstOrDefault().Should()
-                .Be(expectedError);
+            ((JsonElement)error.Context).GetProperty("NonNullableObject").EnumerateArray().FirstOrDefault().ToString().Should().Be(expectedError);
             error.Service.Should().Be(expectedServiceName);
         }
 
@@ -149,12 +148,12 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             var success = response.TryParseApiError(out var error);
 
             // Assert
-            success.Should().Be(true);
+            
+            
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.ErrorCode.Should().Be(1337);
             error.Error.Should().Be(ValidationError);
-            ((JObject) error.Context)["NonNullableObject"].ToObject<string[]>().FirstOrDefault().Should()
-                .Be(expectedError);
+            ((JsonElement)error.Context).GetProperty("NonNullableObject").EnumerateArray().FirstOrDefault().ToString().Should().Be(expectedError);
             error.Service.Should().Be(expectedServiceName);
         }
 

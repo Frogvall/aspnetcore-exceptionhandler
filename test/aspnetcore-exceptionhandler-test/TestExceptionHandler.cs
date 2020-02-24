@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling;
@@ -12,8 +13,6 @@ using Frogvall.AspNetCore.ExceptionHandling.Mapper;
 using Frogvall.AspNetCore.ExceptionHandling.Test.Helpers;
 using Frogvall.AspNetCore.ExceptionHandling.Test.TestResources;
 using Microsoft.AspNetCore.Builder;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -28,6 +27,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         private const string ExpectedErrorMySecondValue = "Frogvall.AspNetCore.ExceptionHandling.Test.TestResources.TestEnum.MySecondValue";
         private const string ExpectedErrorMyThirdValue = "Frogvall.AspNetCore.ExceptionHandling.Test.TestResources.TestEnum.MyThirdValue";
 
+        private readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         private readonly ITestOutputHelper _output;
 
         public TestExceptionHandler(ITestOutputHelper output)
@@ -128,7 +128,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
             // Act
             var response = await client.PostAsync("/api/Test", content);
-            var error = JsonConvert.DeserializeObject<ApiError>(await response.Content.ReadAsStringAsync());
+            var error = JsonSerializer.Deserialize<ApiError>(await response.Content.ReadAsStringAsync(), _serializerOptions);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
@@ -154,7 +154,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
             // Act
             var response = await client.PostAsync("/api/Test", content);
-            var error = JsonConvert.DeserializeObject<ApiError>(await response.Content.ReadAsStringAsync());
+            var error = JsonSerializer.Deserialize<ApiError>(await response.Content.ReadAsStringAsync(), _serializerOptions);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
@@ -218,14 +218,14 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
             // Act
             var response = await client.PostAsync("/api/Test", content);
-            var error = JsonConvert.DeserializeObject<ApiError>(await response.Content.ReadAsStringAsync());
+            var error = JsonSerializer.Deserialize<ApiError>(await response.Content.ReadAsStringAsync(), _serializerOptions);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.ErrorCode.Should().Be((int)expectedErrorCode);
             error.Error.Should().Be(ExpectedErrorMyThirdValue);
-            ((JObject)error.Context).ToObject<TestContext>().TestValue.Should().Be(expectedContext);
-            ((JObject)error.DeveloperContext).ToObject<TestDeveloperContext>().TestValue.Should().Be(expectedContext);
+            JsonSerializer.Deserialize<TestContext>(((JsonElement)error.Context).GetRawText(), _serializerOptions).TestValue.Should().Be(expectedContext);
+            JsonSerializer.Deserialize<TestDeveloperContext>(((JsonElement)error.DeveloperContext).GetRawText(), _serializerOptions).TestValue.Should().Be(expectedContext);
             error.Service.Should().Be(expectedServiceName);
         }
 
@@ -245,14 +245,14 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
             // Act
             var response = await client.PostAsync("/api/Test", content);
-            var error = JsonConvert.DeserializeObject<ApiError>(await response.Content.ReadAsStringAsync());
+            var error = JsonSerializer.Deserialize<ApiError>(await response.Content.ReadAsStringAsync(), _serializerOptions);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             error.ErrorCode.Should().Be((int)expectedErrorCode);
             error.Error.Should().Be(ExpectedErrorMyFirstValue);
-            ((JObject)error.Context).ToObject<TestContext>().TestValue.Should().Be(expectedContext);
-            ((JObject)error.DeveloperContext).ToObject<TestDeveloperContext>().TestValue.Should().Be(expectedContext);
+            JsonSerializer.Deserialize<TestContext>(((JsonElement)error.Context).GetRawText(), _serializerOptions).TestValue.Should().Be(expectedContext);
+            JsonSerializer.Deserialize<TestDeveloperContext>(((JsonElement)error.DeveloperContext).GetRawText(), _serializerOptions).TestValue.Should().Be(expectedContext);
             error.Service.Should().Be(expectedServiceName);
         }
 
@@ -272,14 +272,14 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
             // Act
             var response = await client.PostAsync("/api/Test", content);
-            var error = JsonConvert.DeserializeObject<ApiError>(await response.Content.ReadAsStringAsync());
+            var error = JsonSerializer.Deserialize<ApiError>(await response.Content.ReadAsStringAsync(), _serializerOptions);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
             error.ErrorCode.Should().Be((int)expectedErrorCode);
             error.Error.Should().Be(ExpectedErrorMySecondValue);
-            ((JObject)error.Context).ToObject<TestContext>().TestValue.Should().Be(expectedContext);
-            ((JObject)error.DeveloperContext).ToObject<TestDeveloperContext>().TestValue.Should().Be(expectedContext);
+            JsonSerializer.Deserialize<TestContext>(((JsonElement)error.Context).GetRawText(), _serializerOptions).TestValue.Should().Be(expectedContext);
+            JsonSerializer.Deserialize<TestDeveloperContext>(((JsonElement)error.DeveloperContext).GetRawText(), _serializerOptions).TestValue.Should().Be(expectedContext);
             error.Service.Should().Be(expectedServiceName);
         }
 
@@ -296,7 +296,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
             // Act
             var response = await client.GetAsync("/api/Test/Cancellation");
-            var error = JsonConvert.DeserializeObject<ApiError>(await response.Content.ReadAsStringAsync());
+            var error = JsonSerializer.Deserialize<ApiError>(await response.Content.ReadAsStringAsync(), _serializerOptions);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);

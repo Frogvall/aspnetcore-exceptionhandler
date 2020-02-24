@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Newtonsoft.Json;
 
 namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
 {
@@ -8,7 +7,11 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
     {
         public const string ModelBindingErrorMessage = "Invalid parameters.";
 
-        [JsonConstructor]
+        public ApiError()
+        {
+            
+        }
+
         public ApiError(string serviceName)
         {
             Service = serviceName;
@@ -43,22 +46,18 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
         }
         public string Service { get; set; }
 
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string CorrelationId { get; set; }
 
         public string Message { get; set; }
 
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string DetailedMessage { get; set; }
 
         public int ErrorCode { get; set; }
 
         public string Error { get; set; }
 
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public object Context { get; set; }
 
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public object DeveloperContext { get; set; }
     }
 }
