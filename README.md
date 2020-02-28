@@ -43,87 +43,68 @@ A few other packages are handled by this repo that builds upon the functionality
 - [Swagger](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.Swagger/) - Adds a couple of OperationFilters for those that use Swashbuckle.Swagger and wants to automatically decorate their Open Api documentation with 400 and 500, which the exception handler can throw for any operation.
 
 ## Using the exception handler
+You could hook the exception handler into your asp.net core pipeline in two ways. Either as a middleware or a filter. When hooking it in as a middleware, the exception handler uses Microsoft's exception handler middleware under the hood, which clears headers upon handling the exception. This will result in a CORS error if called from a javascript application.
+If used as a filter, the headers will remain intact.
+It's certainly viable to have both the middleware and the filter hooked in at the same time. What will happen in such case is that the filter will catch any error within the controller method and handle it accordingly, while the middleware will function as a final safe guard, in case the application encounters a problem before the controller method has been reached, for example while invoking another middleware.
+
+To add the exception handler filter, add the following to according `MVCOptions` in your `ConfigureServices()` method:
+
+```cs
+mvcOptions.Filters.Add<ApiExceptionFilter>();
+```
+
+For example:
+
+```cs
+services.AddControllers(mvcOptions =>
+    {
+        mvcOptions.Filters.Add<ApiExceptionFilter>();
+    });
+```
+
+To hook it into the middleware pipeline, add this to the `Configure()` method:
+
+```cs
+app.UseApiExceptionHandler();
+```
+
+## Add the exception mapper
+Included in the exception handler package is an exception mapper. You don't have to utilize the mapper for the exception handler to work, but you still have to initialize it.
+To initialize the mapper add this to the `ConfigureServices()`method:
+
+```cs
+services.AddExceptionMapper();
+```
+
+This is all that is needed to use the basic functionality of this package. Exceptions will be handled and parsed into a http response with a status code of 500. The exception stack trace will be pushed with the response when run locally, and a generic message will take it's place when `IsDevelopment()` is false.
+
+## Adding mapping profiles
+
+If you want to handle 4xx and 5xx errors in your api's by casting exceptions, you can create a mapping profile. Anywhere in your assembly, put a class that implements the abstract `ExceptionMappingProfile<>` class. The generic type should be an enum that describes the error. The int and string representation of the enum will both exist in the response, so keep that in mind when naming them. Exception mapping happens in the constructor and there you inform the mapper what exceptions should result in what http status code and what internal errorcode it should represent.
+
+Example:
+```cs
+public class MyMappingProfile : ExceptionMappingProfile<MyErrorEnum>
+    {
+        public MyMappingProfile()
+        {
+            AddMapping<MyException>(HttpStatusCode.BadRequest, MyErrorEnum.MyErrorCode);
+        }
+    }
+```
+
+As an alternative, the AddMapping function can take a lambda instead of an enum.
+
+The exception mapper only handles exceptions that implement the `BaseApiException` included in this package, as a way for you to prove to it that you own the exception. The reasoning for that is that you don't necessary know where other exceptions come from in beforehand and therefore can't be sure it's mapped correctly.
+
+After an exception is mapped, it can be thrown from anyewhere in order to abort the current api action and return with the corresponding http status code.
+
+## Exception listener
+
+## Exception handler options
 
 ======= OLD =======
 
-AspNetCore Exception Handler for asp.net core that include things like an Exception Handler middleware, modelstate validation by attribute, RequireNonDefault attribute for controller models, and swagger operation filters for 400 and 500.
-
-## Getting started
-
-### Install the package
-Install the nuget package from [nuget](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling/)
-
-Either add it with the PM-Console:
-
-        Install-Package Frogvall.AspNetCore.ExceptionHandling
-
-Or add it to csproj file ->
-```xml
-        <ItemGroup>
-                ...
-                <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling" Version="x.y.z" />
-                ...
-        </ItemGroup>
-```
-
-Additional features, not directly related to exception handling per se, but that builds on this package has been moved into separate nugets:
-Frogvall.AspNetCore.ExceptionHandling.AwsXRay
-Frogvall.AspNetCore.ExceptionHandling.ModelValidation
-Frogvall.AspNetCore.ExceptionHandling.Swagger
-
-### Using the utilites
-
-Edit your Startup.cs ->
-```cs
-        public void ConfigureServices(IServiceCollection services)
-        {
-          //...
-
-          services.AddExceptionMapper();
-          services.AddMvc(options =>
-             {
-                options.Filters.Add<ApiExceptionFilter>();
-             });
-
-          //...
-        }
-
-        public void Configure()
-        {
-           //...
-
-           app.UseApiExceptionHandler();
-
-           //...
-        }
-```
-Create an exeption that inherits BaseApiException ->
-```cs
-        public class MyException : BaseApiException
-```
-
-Create an enum that describes your error codes ->
-```cs
-        public enum MyErrorEnum
-        {
-           MyErrorCode = 1337
-        }
-```
-
-Create one or more exception mapper profiles anywhere in your project. Add mappings in the constructor of the profile ->
-```cs
-        public class MyMappingProfile : ExceptionMappingProfile<MyErrorEnum>
-        {
-          public MyMappingProfile()
-          {
-             AddMapping<MyException>(HttpStatusCode.BadRequest, MyErrorEnum.MyErrorCode);
-          }
-        }
-```
-Throw when returning non 2xx ->
-```cs
-        throw new MyException("Some message.", new { AnyProperty = "AnyValue."});
-```
 Either add to controller or controller method ->
 ```cs
         [ValidateModelFilter(ErrorCode = 123)]
