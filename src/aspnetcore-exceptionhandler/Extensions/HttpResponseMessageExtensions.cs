@@ -20,9 +20,9 @@ namespace System.Net.Http
 
             try
             {
-                var responseResult = await httpResponseMessage.Content.ReadAsStringAsync();
-                var error = JsonSerializer.Deserialize<ApiError>(responseResult, options);
-                return error;
+                using (var stream = await httpResponseMessage.Content.ReadAsStreamAsync()) {
+                    return await JsonSerializer.DeserializeAsync<ApiError>(stream, options);
+                }
             }
             catch
             {
