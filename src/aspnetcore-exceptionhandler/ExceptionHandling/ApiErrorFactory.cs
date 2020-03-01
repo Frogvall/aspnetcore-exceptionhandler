@@ -17,7 +17,14 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
             //Execute custom exception handlers first.
             foreach (var customExceptionListener in exceptionListeners)
             {
-                customExceptionListener.Invoke(ex);
+                try 
+                {
+                    customExceptionListener.Invoke(ex);
+                }
+                catch (Exception e)
+                {
+                    logger.LogWarning(e, "Custom exception listener {exceptionListener} threw an exception.", customExceptionListener.GetType().ToString());
+                }
             }
 
             context.Response.ContentType = "application/json";
