@@ -14,76 +14,107 @@ There are also a few other packages included in this repo that builds on the exc
 
 ## Table of Contents
 
-## Getting started
+- [Installing the package](#installing-the-package)
+  - [Extension packages](#extension-packages)
+- [Using the exception handler](#using-the-exception-handler)
+  - [Exception listeners](#exception-listeners)
+- [Adding the exception mapper](#adding-the-exception-mapper)
+  - [Mapping profiles](#mapping-profiles)
+  - [Mapper options](#mapper-options)
+- [Api error](#api-error)
+- [Model validation](#model-validation)
 
-### Installing the package
+## Installing the package
 
 Install the nuget package from [nuget](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling/)
 
-Either add it with the PM-Console:
+Either add it with the PM-Console.
 
-        Install-Package Frogvall.AspNetCore.ExceptionHandling
+```text
+Install-Package Frogvall.AspNetCore.ExceptionHandling
+```
 
-Or add it to your csproj file:
+Or add it to your csproj file.
+
 ```xml
-        <ItemGroup>
-                ...
-                <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling" Version="5.0.0" />
-                ...
-        </ItemGroup>
+<ItemGroup>
+        ...
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling" Version="5.0.0" />
+        ...
+</ItemGroup>
 ```
 
 ### Extension packages
 
 A few other packages are handled by this repo that builds upon the functionality of the main package:
 
-- [AwsXray](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.AwsXRay/) - Adds an extra middleware for decorating the status code of the xray trace record, needed if using the exception handler middleware in unison with Amazon XRay. Also adds an exception listener for decorating the trace record with the catched exception.
-- [ModelValidation](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.ModelValidation/) - Adds another filter for automatically validating the models in your controller and returning with a http content on the same format as the exception handler, to make the result unison no matter if the exception handler returns it or the model validation fails. Also supplies an attribute like `[Required]`, but for non-nullable types, like integers, guids, etc.
-- [NewtonsoftJson](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson/) - From version 5.0.0 this package relies on the `System.Text.Json` library for writing and parsing json. This includes the extension methods for parsing an ApiError. This package adds extra parsing options for those who are using Newtonsoft.Json instead.
-- [Swagger](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.Swagger/) - Adds a couple of OperationFilters for those that use Swashbuckle.Swagger and wants to automatically decorate their Open Api documentation with 400 and 500, which the exception handler can throw for any operation.
+- [AwsXray](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.AwsXRay/): Adds an extra middleware for decorating the status code of the xray trace record, needed if using the exception handler middleware in unison with AWS XRay. Also adds an exception listener for decorating the trace record with the catched exception.
+- [ModelValidation](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.ModelValidation/): Adds another filter for automatically validating the models in your controller and returning with a http content on the same format as the exception handler, to make the result unison no matter if the exception handler returns it or the model validation fails. Also supplies an attribute like `[Required]`, but for non-nullable types, like integers, guids, etc.
+- [NewtonsoftJson](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson/): From version 5.0.0 this package relies on the `System.Text.Json` library for writing and parsing json. This includes the extension methods for parsing an ApiError. This package adds extra parsing options for those who are using Newtonsoft.Json instead.
+- [Swagger](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.Swagger/): Adds a couple of OperationFilters for those that use Swashbuckle.Swagger and wants to automatically decorate their Open Api documentation with 400 and 500, which the exception handler can throw for any operation.
 
 ## Using the exception handler
+
 You could hook the exception handler into your asp.net core pipeline in two ways. Either as a middleware or a filter. When hooking it in as a middleware, the exception handler uses Microsoft's exception handler middleware under the hood, which clears headers upon handling the exception. This will result in a CORS error if called from a javascript application.
 If used as a filter, the headers will remain intact.
 It's certainly viable to have both the middleware and the filter hooked in at the same time. What will happen in such case is that the filter will catch any error within the controller method and handle it accordingly, while the middleware will function as a final safe guard, in case the application encounters a problem before the controller method has been reached, for example while invoking another middleware.
 
-To add the exception handler filter, add the following to according `MVCOptions` in your `ConfigureServices()` method:
+To add the exception handler filter, add the following to according `MVCOptions` in your `ConfigureServices()` method.
 
-```cs
+```csharp
 mvcOptions.Filters.Add<ApiExceptionFilter>();
 ```
 
-For example:
+Example:
 
-```cs
+```csharp
 services.AddControllers(mvcOptions =>
     {
         mvcOptions.Filters.Add<ApiExceptionFilter>();
     });
 ```
 
-To hook it into the middleware pipeline, add this to the `Configure()` method:
+To hook it into the middleware pipeline, add this to the `Configure()` method.
 
-```cs
+```csharp
 app.UseApiExceptionHandler();
 ```
 
-## Add the exception mapper
+Since middlewares are dependent on the order they are executed, make sure that any middleware that executes before the exception handler middleware can never throw an exception. If that happens you service will terminate.
+
+### Exception listeners
+
+Sometimes you want to do some things when the exception handler catches an exception. One such example could be that you would want to add exception metadata to your tracing context, for example Amazon XRay. In order to do so, you can pass one or several actions to the exception handler middleware and filter. The actions will be executed when an exception is catched, before the http response is built.
+
+```csharp
+services.AddControllers(mvcOptions =>
+    {
+        mvcOptions.Filters.Add(new ApiExceptionFilter(MyExceptionListener.HandleException));
+    });
+```
+
+```csharp
+app.UseApiExceptionHandler(MyExceptionListener.HandleException);
+```
+
+## Adding the exception mapper
+
 Included in the exception handler package is an exception mapper. You don't have to utilize the mapper for the exception handler to work, but you still have to initialize it.
 To initialize the mapper add this to the `ConfigureServices()`method:
 
-```cs
+```csharp
 services.AddExceptionMapper();
 ```
 
 This is all that is needed to use the basic functionality of this package. Exceptions will be handled and parsed into a http response with a status code of 500. The exception stack trace will be pushed with the response when run locally, and a generic message will take it's place when `IsDevelopment()` is false.
 
-## Adding mapping profiles
+### Mapping profiles
 
 If you want to handle 4xx and 5xx errors in your api's by casting exceptions, you can create a mapping profile. Anywhere in your assembly, put a class that implements the abstract `ExceptionMappingProfile<>` class. The generic type should be an enum that describes the error. The int and string representation of the enum will both exist in the response, so keep that in mind when naming them. Exception mapping happens in the constructor and there you inform the mapper what exceptions should result in what http status code and what internal errorcode it should represent.
 
 Example:
-```cs
+
+```csharp
 public class MyMappingProfile : ExceptionMappingProfile<MyErrorEnum>
     {
         public MyMappingProfile()
@@ -99,36 +130,20 @@ The exception mapper only handles exceptions that implement the `BaseApiExceptio
 
 After an exception is mapped, it can be thrown from anyewhere in order to abort the current api action and return with the corresponding http status code.
 
-## Exception listener
+### Mapper options
 
-## Exception handler options
+When initializing the exception mapper, there are some options you can pass in. Those are:
 
-======= OLD =======
+- `ServiceName`: Setting this option will override the default service name that will be added to the respond message. By default the entry assembly name will be chosen, but there are cases where this is not the correct name. When running in AWS Lambda for example, the default name would be "LambdaExecutor".
+- `RespondWithDeveloperContext`: A boolean descibing wether the developer context should be written in the respons. This is handy for example in local development, but not recommended in production. This could for example be set to `IHostEnvironment.IsDevelopment()`. The default is `false`.
 
-Either add to controller or controller method ->
-```cs
-        [ValidateModelFilter(ErrorCode = 123)]
-```
-Or add to the filters of MVC ->
-```cs
-        services.AddMvc(options =>
-           {
-               options.Filters.Add(new ValidateModelFilter { ErrorCode = 123 } );
-           });
-```
+## Api error
 
-Add to controller model (dto) property ->
-```cs
-        [RequireNonDefault]
-```
-Add to swagger spec ->
-```cs
-        options.OperationFilter<ValidateModelOperationFilter>();
-        options.OperationFilter<InternalServerErrorOperationFilter>();
-```
+The exception handler uses an `ApiError` class that is serialized into the response body. There are also a couple of extension methods that can be used to parse an ApiError received as the response body from a downstream service.
 
-To consume the api error from another service using this package in an asynchronous context ->
-```cs
+To parse an ApiError in an asynchronous context, use the `ParseApiErrorAsync` extension method.
+
+```csharp
         var response = await _client.PostAsync(...);
         var error = await response.ParseApiErrorAsync();
         if (error != null)
@@ -141,8 +156,9 @@ To consume the api error from another service using this package in an asynchron
         }
 ```
 
-To consume the api error from another service using this package in a synchronous context ->
-```cs
+To parse an ApiError in a synchronous context you can call `TryParseApiError(out ApiError error)`
+
+```csharp
         if (response.TryParseApiError(out var error))
         {
             //Handle api error here
@@ -153,37 +169,162 @@ To consume the api error from another service using this package in a synchronou
         }
 ```
 
-## Build and Publish
+As the context and developer context of the api error class can be any object, they are deserialized as `System.Text.Json.JsonElement`.
 
-### Prequisites
+## Model validation package
 
-* docker, docker-compose
-* dotnet core 2.0 sdk  [download core](https://www.microsoft.com/net/core)
+As an extension package you can add automatic model validation to your controller actions. The model validation filter will check your incoming requests against your models and return with a `400 Bad Request` if the model validation fails. The return body will be formatted in the same way as the exception handler formats any other exception. In order to utilize the model validation functionalities you need to add the model validation package to your dependencies.
 
-The package is build in docker so you will need to install docker to build and publish the package.
-(Of course you could just build it on the machine you are running on and publish it from there.
-I prefer to build and publish from docker images to have a reliable environment, plus make it easier
-to build this on circleci).
+```text
+Install-Package Frogvall.AspNetCore.ExceptionHandling.ModelValidation
+```
 
-### build
+or
 
-run:
-        docker-compose -f docker-compose-build.yml up
+```xml
+<ItemGroup>
+        ...
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.ModelValidation" Version="5.0.0" />
+        ...
+</ItemGroup>
+```
 
-this will build & test the code. The testresult will be in folder ./testresults and the package in ./package
+### Model validation filter
 
-! *if you clone the project on a windows machine you will have to change the file endings on the build-container.sh to LF*
+In order for all your controller actions to have their models automatically validated you can add the `ModelValidationFilter` to your `MVCOptions` in your `ConfigureServices()` method.
 
-### publish
+```csharp
+services.AddMvc(options =>
+    {
+        options.Filters.Add(new ValidateModelFilter { ErrorCode = 123 } );
+    });
+```
 
-run: (fill in the api key):
+Alternatively, you could add the model validation filter as an attribute to specific controllers or controller methods.
 
-        docker run --rm -v ${PWD}/package:/data/package schwamster/nuget-docker push /data/package/*.nupkg <your nuget api key> -Source nuget.org
+```csharp
+[ValidateModelFilter(ErrorCode = 123)]
+```
 
-this will take the package from ./package and push it to nuget.org
+### Skip model validation filter
 
-### build on circleci
+If using the mvc filter to add model validation as default, and you for some reason want to exclude a single controller or controller action from the model validation, this can be done by appending the `SkipModelValidation` attribute.
 
-The project contains a working circle ci yml file. All you have to do is to configure the Nuget Api Key in the build projects environment variables on circleci (Nuget_Api_Key)
+```csharp
+[SkipModelValidationFilter]
+```
 
+## Newtonsoft json package
 
+The exception handler uses System.Text.Json for serializing and deserializing json. If you are using `Newtonsoft.Json` for serialization and deserialization in your service, the exception handler still works fine. The only caveat is that the extension methods that parses the `ApiError` class is going to include `System.Text.Json.JsonElement` objects. If you rather would have them as `Newtonsoft.Json.JObjects` you can use the extension methods that are included in this package instead. In order to do so you need to add the newtonsoft json package to your dependencies.
+
+```text
+Install-Package Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson
+```
+
+or
+
+```xml
+<ItemGroup>
+        ...
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson" Version="5.0.0" />
+        ...
+</ItemGroup>
+```
+
+You can then call the newtonsoft json extension methods instead. To parse an ApiError in an asynchronous context, use the `ParseApiErrorUsingNewtonsoftJsonAsync` extension method.
+
+```csharp
+        var response = await _client.PostAsync(...);
+        var error = await response.ParseApiErrorUsingNewtonsoftJsonAsync();
+        if (error != null)
+        {
+            //Handle api error here
+        }
+        else
+        {
+            //Handle non-api error here
+        }
+```
+
+To parse an ApiError in a synchronous context you can call `TryParseApiErrorUsingNewtonsoftJson(out ApiError error)`
+
+```csharp
+        if (response.TryParseApiErrorUsingNewtonsoftJson(out var error))
+        {
+            //Handle api error here
+        }
+        else
+        {
+            //Handle non-api error here
+        }
+```
+
+## Swagger package
+
+The swagger extension package is a very small package that comes with a couple of operation filters, that can be attached to your `Swashbuckle.Swagger` swagger specification in order to always decorate your swagger documentation with the two http status codes that the exception handler return. To use those operation filters you need to add the swagger package to your dependencies.
+
+```text
+Install-Package Frogvall.AspNetCore.ExceptionHandling.Swagger
+```
+
+or
+
+```xml
+<ItemGroup>
+        ...
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.Swagger" Version="5.0.0" />
+        ...
+</ItemGroup>
+```
+
+You can then add the operation filters to your swagger options object.
+
+```csharp
+services.AddSwaggerGen(options =>
+{
+    options.OperationFilter<ValidateModelOperationFilter>();
+    options.OperationFilter<InternalServerErrorOperationFilter>();
+});
+```
+
+## AWS XRay package
+
+When deploying your service in AWS and using AWS XRay for tracing, this package comes with a couple of handy addons for making your XRay traces better. In order to utilize these addons you need to add the aws xray package to your dependencies.
+
+```text
+Install-Package Frogvall.AspNetCore.ExceptionHandling.AwsXRay
+```
+
+or
+
+```xml
+<ItemGroup>
+        ...
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.AwsXRay" Version="5.0.0" />
+        ...
+</ItemGroup>
+```
+
+### Exception status code decorator
+
+When using the exception handling middleware, the status code for the response has not yet been set when the AWS XRay middleware catches the exception. Hence, the status code will be set to 200 in your XRay trace, even though it should be something else. This could be remedified by adding XRay before the exception handler, but then the exception metadata will be missing from the XRay trace instead, and any exception thrown by the XRay middleware will crash the application.
+Another way to remedify the problem is to add the `ExceptionStatusCodeDecoratorMiddleware` after the XRay middleware. The status decorator will catch the exception, use the exception mapper to decorate the status code and rethrow. The exception will then be catched by the XRay middleware, the XRay trace will be decorated with the correct status code and exception metadata and rethrown and finally handled by the exception handler middleware.
+
+```csharp
+// Order is important
+app.UseApiExceptionHandler();
+app.UseXRay("MyServiceName");
+app.ExceptionStatusCodeDecoratorMiddleware();
+```
+
+### AWS XRay exception listener
+
+When using the exception handler filter in concordance with the AWS XRay middleware, the exception thrown will never reach the AWS XRay middleware and hence the XRay trace will never be decorated with the exception metadata. This package includes an exception listener (see #exception-listeners) that will decorate the XRay trace when the exception handler filter catches an exception. To use the AWS XRay exception listener, add its handle action when adding the exception handler filter.
+
+```csharp
+services.AddControllers(mvcOptions =>
+    {
+        mvcOptions.Filters.Add(new ApiExceptionFilter(AwsXRayExceptionListener.AddExceptionMetadataToAwsXRay));
+    });
+```
