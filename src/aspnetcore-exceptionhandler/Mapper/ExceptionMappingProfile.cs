@@ -11,22 +11,26 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Mapper
 
         protected void AddMapping<TException>(HttpStatusCode exceptionHandlerReturnCode, TErrorCode errorCode) where TException : BaseApiException
         {
-            AddMapping<TException>(exceptionHandlerReturnCode, ex => (int)(object)errorCode);
+            AddMapping<TException>(exceptionHandlerReturnCode, ex => (int)(object)errorCode, ex => $"{typeof(TErrorCode).FullName}.{errorCode.ToString()}");
         }
 
         protected void AddMapping<TException>(HttpStatusCode exceptionHandlerReturnCode, Func<TException, TErrorCode> errorCode) where TException : BaseApiException
         {
-            AddMapping<TException>(exceptionHandlerReturnCode, ex => (int) (object) errorCode.Invoke(ex));
+            AddMapping<TException>(exceptionHandlerReturnCode, ex => (int) (object) errorCode.Invoke(ex), ex => 
+            {
+                var error = errorCode.Invoke(ex);
+                return $"{error.GetType().FullName}.{error.ToString()}";
+            });
         }
         
-        private void AddMapping<TException>(HttpStatusCode exceptionHandlerReturnCode, Func<TException, int> errorCode) where TException : BaseApiException
+        private void AddMapping<TException>(HttpStatusCode exceptionHandlerReturnCode, Func<TException, int> errorCode, Func<TException, string> error) where TException : BaseApiException
         {
             var typeOfTException = typeof(TException);
             if (ExceptionMap.ContainsKey(typeOfTException))
                 throw new InvalidOperationException($"Duplicate entry. Exception already added to map: {typeOfTException.FullName}");
             if ((int)exceptionHandlerReturnCode < 400 || (int)exceptionHandlerReturnCode > 599)
                 throw new ArgumentException($"Invalid http status code: {(int)exceptionHandlerReturnCode} {exceptionHandlerReturnCode.ToString()}. Only 4xx and 5xx status codes are allowed.");
-            ExceptionMap.Add(typeOfTException, new ExceptionMapper.ExceptionDescription<TException> { ErrorCode = errorCode, ExceptionHandlerReturnCode = exceptionHandlerReturnCode });
+            ExceptionMap.Add(typeOfTException, new ExceptionMapper.ExceptionDescription<TException> { ErrorCode = errorCode, Error = error, ExceptionHandlerReturnCode = exceptionHandlerReturnCode });
         }
     }
 }

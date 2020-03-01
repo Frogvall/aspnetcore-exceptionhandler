@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+﻿using Newtonsoft.Json;
 using System.Threading.Tasks;
 using Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling;
 
@@ -6,7 +6,7 @@ namespace System.Net.Http
 { 
     public static class HttpResponseMessageExtensions
     {
-        public static async Task<ApiError> ParseApiErrorAsync(this HttpResponseMessage httpResponseMessage)
+        public static async Task<ApiError> ParseApiErrorUsingNewtonsoftJsonAsync(this HttpResponseMessage httpResponseMessage)
         {
             //Not an error if successful
             if (httpResponseMessage.IsSuccessStatusCode)
@@ -14,15 +14,11 @@ namespace System.Net.Http
                 return null;
             }
 
-            var options = new JsonSerializerOptions{
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
-
             try
             {
-                using (var stream = await httpResponseMessage.Content.ReadAsStreamAsync()) {
-                    return await JsonSerializer.DeserializeAsync<ApiError>(stream, options);
-                }
+                var responseResult = await httpResponseMessage.Content.ReadAsStringAsync();
+                var error = JsonConvert.DeserializeObject<ApiError>(responseResult);
+                return error;
             }
             catch
             {
@@ -30,7 +26,7 @@ namespace System.Net.Http
             }
         }
 
-        public static bool TryParseApiError(this HttpResponseMessage httpResponseMessage, out ApiError error)
+        public static bool TryParseApiErrorUsingNewtonsoftJson(this HttpResponseMessage httpResponseMessage, out ApiError error)
         {
             error = null;
             //Not an error if successful
@@ -39,14 +35,10 @@ namespace System.Net.Http
                 return false;
             }
 
-            var options = new JsonSerializerOptions{
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
-
             try
             {
                 var responseResult = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                error = JsonSerializer.Deserialize<ApiError>(responseResult, options);
+                error = JsonConvert.DeserializeObject<ApiError>(responseResult);
                 return error != null;
             }
             catch

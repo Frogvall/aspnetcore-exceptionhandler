@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Net;
+using System.Text.Json;
 using Frogvall.AspNetCore.ExceptionHandling.Attributes;
 using Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling;
 using Frogvall.AspNetCore.ExceptionHandling.Mapper;
@@ -8,7 +9,6 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace Frogvall.AspNetCore.ExceptionHandling.Filters
 {
@@ -49,9 +49,9 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Filters
 
             var logger = context.HttpContext.RequestServices.GetService<ILogger<ValidateModelFilter>>();
             logger.LogInformation("A request have been rejected due to invalid parameters: {invalidParams}. Will return with {statusCodeInt} {statusCodeString}.", 
-                JsonConvert.SerializeObject(new SerializableError(context.ModelState)), (int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString());
+                JsonSerializer.Serialize(new SerializableError(context.ModelState)), (int)HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString());
             var mapper = context.HttpContext.RequestServices.GetService<IExceptionMapper>();
-            context.Result = new BadRequestObjectResult(new ApiError(ErrorCode, context.ModelState, context.HttpContext.TraceIdentifier, mapper.Options.ServiceName));
+            context.Result = new BadRequestObjectResult(new ApiError(ErrorCode, "Frogvall.AspNetCore.ExceptionHandling.ModelValidationError", context.ModelState, context.HttpContext.TraceIdentifier, mapper.Options.ServiceName));
         }
     }
 }

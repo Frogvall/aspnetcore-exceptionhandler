@@ -4,13 +4,13 @@
     <VersionPrefix>5.0.0</VersionPrefix>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>Frogvall.AspNetCore.ExceptionHandling</RootNamespace>
-    <AssemblyName>ExceptionHandling.AwsXRay</AssemblyName>
-    <PackageId>Frogvall.AspNetCore.ExceptionHandling.AwsXRay</PackageId>
+    <AssemblyName>ExceptionHandling.NewtonsoftJson</AssemblyName>
+    <PackageId>Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson</PackageId>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSXRayRecorder.Core" Version="2.6.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
   <ItemGroup>

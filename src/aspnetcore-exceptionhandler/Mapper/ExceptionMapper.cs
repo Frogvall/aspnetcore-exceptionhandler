@@ -36,9 +36,10 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Mapper
         internal class ExceptionDescription<TException> : ExceptionDescription where TException : BaseApiException
         {
             public Func<TException, int> ErrorCode { get; set; }
+            public Func<TException, string> Error { get; set; }
         }
 
-        public int GetErrorCode(BaseApiException exception)
+        public (int errorCode, string error) GetError(BaseApiException exception)
         {
             try
             {
@@ -48,13 +49,16 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Mapper
                         $"Exception {exceptionType.FullName} has not been mapped accordingly. Should be treated as an unexpected exception");
                 var exceptionDescriptionType = typeof(ExceptionDescription<>).MakeGenericType(exceptionType);
                 var instance = Convert.ChangeType(_map[exceptionType], exceptionDescriptionType);
-                var property = exceptionDescriptionType.GetProperty("ErrorCode");
-                var method = property?.PropertyType.GetMethod("Invoke");
-                var errorCode = method?.Invoke(property.GetValue(instance), new object[] { exception });
-                if (errorCode == null)
+                var errorCodeProperty = exceptionDescriptionType.GetProperty("ErrorCode");
+                var errorCodeMethod = errorCodeProperty?.PropertyType.GetMethod("Invoke");
+                var errorCode = errorCodeMethod?.Invoke(errorCodeProperty.GetValue(instance), new object[] { exception });
+                var errorProperty = exceptionDescriptionType.GetProperty("Error");
+                var errorMethod = errorProperty?.PropertyType.GetMethod("Invoke");
+                var error = errorMethod?.Invoke(errorProperty.GetValue(instance), new object[] { exception });
+                if (errorCode == null || error == null)
                     throw new ArgumentException(
                         $"Exception {exceptionType.FullName} has not been mapped accordingly. Should be treated as an unexpected exception");
-                return (int) errorCode;
+                return ((int) errorCode, error.ToString());
             }
             catch
             {

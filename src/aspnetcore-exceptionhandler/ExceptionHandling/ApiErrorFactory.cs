@@ -17,14 +17,22 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
             //Execute custom exception handlers first.
             foreach (var customExceptionListener in exceptionListeners)
             {
-                customExceptionListener.Invoke(ex);
+                try 
+                {
+                    customExceptionListener.Invoke(ex);
+                }
+                catch (Exception e)
+                {
+                    logger.LogWarning(e, "Custom exception listener {exceptionListener} threw an exception.", customExceptionListener.GetType().ToString());
+                }
             }
 
             context.Response.ContentType = "application/json";
 
             HttpStatusCode statusCode;
-            int errorCode;
+            (int errorCode, string error) errorObject;
             object developerContext = null;
+            object exceptionContext = new {};
 
             switch (ex)
             {
@@ -32,7 +40,8 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
                     try
                     {
                         if (mapper.Options.RespondWithDeveloperContext) developerContext = baseApiException.DeveloperContext;
-                        errorCode = mapper.GetErrorCode(baseApiException);
+                        exceptionContext = baseApiException.Context;
+                        errorObject = mapper.GetError(baseApiException);
                         statusCode = mapper.GetExceptionHandlerReturnCode(baseApiException);
                         context.Response.StatusCode = (int)statusCode;
                         logger.LogInformation(ex,
@@ -45,15 +54,8 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
                     }
 
                     break;
-                case ApiException apiException:
-                    errorCode = -2;
-                    statusCode = apiException.StatusCode;
-                    context.Response.StatusCode = (int)statusCode;
-                    logger.LogInformation(ex,
-                        "ApiException caught by ApiExceptionHandler with  {statusCodeInt} {statusCodeString}. Unexpected: {unexpected}", (int)statusCode, statusCode.ToString(), false);
-                    break;
                 case OperationCanceledException _:
-                    errorCode = -1;
+                    errorObject = (-1, "Frogvall.AspNetCore.ExceptionHandling.OperationCanceled");
                     statusCode = HttpStatusCode.InternalServerError;
                     context.Response.StatusCode = (int)statusCode;
                     logger.LogWarning(ex,
@@ -61,7 +63,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
                         (int)statusCode, statusCode.ToString(), true);
                     break;
                 default:
-                    errorCode = -1;
+                    errorObject = (-1, "Frogvall.AspNetCore.ExceptionHandling.InternalServerError");
                     statusCode = HttpStatusCode.InternalServerError;
                     context.Response.StatusCode = (int)statusCode;
                     logger.LogError(ex,
@@ -73,8 +75,10 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
             var error = new ApiError(mapper.Options.ServiceName)
             {
                 CorrelationId = context.TraceIdentifier,
+                Context = exceptionContext,
                 DeveloperContext = developerContext,
-                ErrorCode = errorCode,
+                ErrorCode = errorObject.errorCode,
+                Error = errorObject.error
             };
 
             if (isDevelopment)

@@ -6,29 +6,30 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+using Microsoft.Extensions.Hosting;
+using System.Text.Json;
 
 namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
 {
     internal class ApiExceptionHandler
     {
         private readonly IExceptionMapper _mapper;
-        private readonly IHostingEnvironment _env;
+        private readonly IHostEnvironment _env;
         private readonly ILogger<ApiExceptionHandler> _logger;
         private readonly Action<Exception>[] _exceptionListeners;
-        private readonly JsonSerializer _serializer;
+        private readonly JsonSerializerOptions _serializerOptions;
 
-        internal ApiExceptionHandler(IExceptionMapper mapper, IHostingEnvironment env,
+        internal ApiExceptionHandler(IExceptionMapper mapper, IHostEnvironment env,
             ILogger<ApiExceptionHandler> logger, Action<Exception>[] exceptionListeners)
         {
             _mapper = mapper;
             _env = env;
             _logger = logger;
             _exceptionListeners = exceptionListeners;
-            _serializer = new JsonSerializer
+            _serializerOptions = new JsonSerializerOptions
             {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                IgnoreNullValues = true
             };
         }
 
@@ -38,12 +39,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
             if (ex == null) return;
 
             var error = ApiErrorFactory.Build(context, ex, _mapper, _logger, _env.IsDevelopment(), _exceptionListeners);
-
-            using (var writer = new StreamWriter(context.Response.Body))
-            {
-                _serializer.Serialize(writer, error);
-                await writer.FlushAsync().ConfigureAwait(false);
-            }
+            await JsonSerializer.SerializeAsync(context.Response.Body, error, _serializerOptions);
         }
     }
 }
