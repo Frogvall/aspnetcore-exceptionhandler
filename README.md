@@ -123,12 +123,12 @@ Example:
 
 ```csharp
 public class MyMappingProfile : ExceptionMappingProfile<MyErrorEnum>
+{
+    public MyMappingProfile()
     {
-        public MyMappingProfile()
-        {
-            AddMapping<MyException>(HttpStatusCode.BadRequest, MyErrorEnum.MyErrorCode);
-        }
+        AddMapping<MyException>(HttpStatusCode.BadRequest, MyErrorEnum.MyErrorCode);
     }
+}
 ```
 
 As an alternative, the AddMapping function can take a lambda instead of an enum.
@@ -151,29 +151,29 @@ The exception handler uses an `ApiError` class that is serialized into the respo
 To parse an ApiError in an asynchronous context, use the `ParseApiErrorAsync` extension method.
 
 ```csharp
-        var response = await _client.PostAsync(...);
-        var error = await response.ParseApiErrorAsync();
-        if (error != null)
-        {
-            //Handle api error here
-        }
-        else
-        {
-            //Handle non-api error here
-        }
+var response = await _client.PostAsync(...);
+var error = await response.ParseApiErrorAsync();
+if (error != null)
+{
+    //Handle api error here
+}
+else
+{
+    //Handle non-api error here
+}
 ```
 
 To parse an ApiError in a synchronous context you can call `TryParseApiError(out ApiError error)`
 
 ```csharp
-        if (response.TryParseApiError(out var error))
-        {
-            //Handle api error here
-        }
-        else
-        {
-            //Handle non-api error here
-        }
+if (response.TryParseApiError(out var error))
+{
+    //Handle api error here
+}
+else
+{
+    //Handle non-api error here
+}
 ```
 
 As the context and developer context of the api error class can be any object, they are deserialized as `System.Text.Json.JsonElement`.
@@ -242,29 +242,29 @@ or
 You can then call the newtonsoft json extension methods instead. To parse an ApiError in an asynchronous context, use the `ParseApiErrorUsingNewtonsoftJsonAsync` extension method.
 
 ```csharp
-        var response = await _client.PostAsync(...);
-        var error = await response.ParseApiErrorUsingNewtonsoftJsonAsync();
-        if (error != null)
-        {
-            //Handle api error here
-        }
-        else
-        {
-            //Handle non-api error here
-        }
+var response = await _client.PostAsync(...);
+var error = await response.ParseApiErrorUsingNewtonsoftJsonAsync();
+if (error != null)
+{
+    //Handle api error here
+}
+else
+{
+    //Handle non-api error here
+}
 ```
 
 To parse an ApiError in a synchronous context you can call `TryParseApiErrorUsingNewtonsoftJson(out ApiError error)`
 
 ```csharp
-        if (response.TryParseApiErrorUsingNewtonsoftJson(out var error))
-        {
-            //Handle api error here
-        }
-        else
-        {
-            //Handle non-api error here
-        }
+if (response.TryParseApiErrorUsingNewtonsoftJson(out var error))
+{
+    //Handle api error here
+}
+else
+{
+    //Handle non-api error here
+}
 ```
 
 ## Swagger package
