@@ -50,6 +50,11 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
         private HttpClient SetupServerWithMvc(bool useExceptionHandlerFilter, string testServiceName)
         {
+            var options = new ExceptionMapperOptions
+                {
+                    RespondWithDeveloperContext = true
+                };
+            if (testServiceName != null) options.ServiceName = testServiceName; 
             return ServerHelper.SetupServerWithMvc(
                 options =>
                 {
@@ -64,14 +69,17 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
                     app.UseMvc();
                 },
                 _output,
-                testServiceName == null ? null : new ExceptionMapperOptions
-                {
-                    ServiceName = TestServiceName
-                });
+                options);
+                
         }
 
         private HttpClient SetupServerWithControllers(bool useExceptionHandlerFilter, string testServiceName)
         {
+             var options = new ExceptionMapperOptions
+                {
+                    RespondWithDeveloperContext = true
+                };
+            if (testServiceName != null) options.ServiceName = testServiceName; 
             return ServerHelper.SetupServerWithControllers(
                 options =>
                 {
@@ -90,10 +98,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
                     });
                 },
                 _output,
-                testServiceName == null ? null : new ExceptionMapperOptions
-                {
-                    ServiceName = TestServiceName
-                });
+                options);
         }
 
         [Theory]
