@@ -22,7 +22,14 @@ There are also a few other packages included in this repo that builds on the exc
   - [Mapping profiles](#mapping-profiles)
   - [Mapper options](#mapper-options)
 - [Api error](#api-error)
-- [Model validation](#model-validation)
+- [Model validation package](#model-validation-package)
+  - [Model validation filter](#model-validation-filter)
+  - [Skip model validation filter](#skip-model-validation-filter)
+- [Newtonsoft json package](#newtonsoft-json-package)
+- [Swagger package](#swagger-package)
+- [AWS XRay package](#aws-xray-package)
+  - [Exception status code decorator](#exception-status-code-decorator)
+  - [AWS XRay exception listener](#aws-xray-exception-listener)
 
 ## Installing the package
 
