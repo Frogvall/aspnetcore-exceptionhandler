@@ -15,11 +15,11 @@ jobs:
       - run: cd test/aspnetcore-exceptionhandler-test
       - run: dotnet test --test-adapter-path:. --logger:"xunit;LogFilePath=./../../testresults/out.xml"
       - run: cd ../..
-      - run: dotnet pack src/aspnetcore-exceptionhandler/aspnetcore-exceptionhandler.csproj -c release -o ./../../package/base
-      - run: dotnet pack src/aspnetcore-exceptionhandler-awsxray/aspnetcore-exceptionhandler-awsxray.csproj -c release -o ./../../package/awsxray
-      - run: dotnet pack src/aspnetcore-exceptionhandler-modelvalidation/aspnetcore-exceptionhandler-modelvalidation.csproj -c release -o ./../../package/modelvalidation
-      - run: dotnet pack src/aspnetcore-exceptionhandler-newtonsoftjson/aspnetcore-exceptionhandler-newtonsoftjson.csproj -c release -o ./../../package/newtonsoftjson
-      - run: dotnet pack src/aspnetcore-exceptionhandler-swagger/aspnetcore-exceptionhandler-swagger.csproj -c release -o ./../../package/swagger
+      - run: dotnet pack src/aspnetcore-exceptionhandler/aspnetcore-exceptionhandler.csproj -c release -o ./package/base
+      - run: dotnet pack src/aspnetcore-exceptionhandler-awsxray/aspnetcore-exceptionhandler-awsxray.csproj -c release -o ./package/awsxray
+      - run: dotnet pack src/aspnetcore-exceptionhandler-modelvalidation/aspnetcore-exceptionhandler-modelvalidation.csproj -c release -o ./package/modelvalidation
+      - run: dotnet pack src/aspnetcore-exceptionhandler-newtonsoftjson/aspnetcore-exceptionhandler-newtonsoftjson.csproj -c release -o ./package/newtonsoftjson
+      - run: dotnet pack src/aspnetcore-exceptionhandler-swagger/aspnetcore-exceptionhandler-swagger.csproj -c release -o ./package/swagger
       - persist_to_workspace:
           root: ~/Frogvall/aspnetcore-exceptionhandler
           paths:
