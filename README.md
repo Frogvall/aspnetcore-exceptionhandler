@@ -7,8 +7,8 @@
 [![Nuget](https://img.shields.io/nuget/v/Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson.svg?label=NewtonsoftJson)](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson/)
 [![Nuget](https://img.shields.io/nuget/v/Frogvall.AspNetCore.ExceptionHandling.Swagger.svg?label=Swagger)](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.Swagger/)
 
-An exception handler for asp.net core that extends Microsofts exception handler middleware as well as implementing an exception handler filter.
-It catches exceptions in your asp net operations and transforms the exception to json response messages, and sets the status code of the response.
+An exception handler for aspnet core that extends Microsofts exception handler middleware as well as implementing an exception handler filter.
+It catches exceptions in your aspnet operations and transforms the exception to json response messages, and sets the status code of the response.
 The package also comes with an exception mapper, that maps thrown exceptions to selected error messages and status codes. By implementing an exception mapping profile you get full control over how an exception should be mapped.
 There are also a few other packages included in this repo that builds on the exception handler, but is not necessarily exception handling per se.
 
@@ -55,7 +55,7 @@ Or add it to your csproj file.
 
 A few other packages are handled by this repo that builds upon the functionality of the main package:
 
-- [AwsXray](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.AwsXRay/): Adds an extra middleware for decorating the status code of the xray trace record, needed if using the exception handler middleware in unison with AWS XRay. Also adds an exception listener for decorating the trace record with the catched exception.
+- [AwsXRay](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.AwsXRay/): Adds an extra middleware for decorating the status code of the AWS XRay trace record, needed if using the exception handler middleware in unison with AWS XRay. Also adds an exception listener for decorating the trace record with the catched exception.
 - [ModelValidation](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.ModelValidation/): Adds another filter for automatically validating the models in your controller and returning with a http content on the same format as the exception handler, to make the result unison no matter if the exception handler returns it or the model validation fails. Also supplies an attribute like `[Required]`, but for non-nullable types, like integers, guids, etc.
 - [NewtonsoftJson](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson/): From version 5.0.0 this package relies on the `System.Text.Json` library for writing and parsing json. This includes the extension methods for parsing an ApiError. This package adds extra parsing options for those who are using Newtonsoft.Json instead.
 - [Swagger](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.Swagger/): Adds a couple of OperationFilters for those that use Swashbuckle.Swagger and wants to automatically decorate their Open Api documentation with 400 and 500, which the exception handler can throw for any operation.
