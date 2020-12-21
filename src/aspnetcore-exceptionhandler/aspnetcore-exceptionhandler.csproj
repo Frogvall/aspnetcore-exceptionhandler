@@ -11,8 +11,4 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App"/>
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="AsyncFriendlyStackTrace" Version="1.6.0" />
-  </ItemGroup>
 </Project>
