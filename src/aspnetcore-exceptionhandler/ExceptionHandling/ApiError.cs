@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
 {
-    public sealed class ApiError
+    public sealed record ApiError
     {
         public const string ModelBindingErrorMessage = "Invalid parameters.";
 
