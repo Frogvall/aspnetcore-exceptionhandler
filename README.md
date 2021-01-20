@@ -46,7 +46,7 @@ Or add it to your csproj file.
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling" Version="5.0.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling" Version="6.0.0" />
         ...
 </ItemGroup>
 ```
@@ -146,7 +146,7 @@ When initializing the exception mapper, there are some options you can pass in. 
 
 ## Api error
 
-The exception handler uses an `ApiError` class that is serialized into the response body. There are also a couple of extension methods that can be used to parse an ApiError received as the response body from a downstream service.
+The exception handler uses an `ApiError` record that is serialized into the response body. There are also a couple of extension methods that can be used to parse an ApiError received as the response body from a downstream service.
 
 To parse an ApiError in an asynchronous context, use the `ParseApiErrorAsync` extension method.
 
@@ -191,7 +191,7 @@ or
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.ModelValidation" Version="5.0.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.ModelValidation" Version="6.0.0" />
         ...
 </ItemGroup>
 ```
@@ -234,7 +234,7 @@ or
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson" Version="5.0.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson" Version="6.0.0" />
         ...
 </ItemGroup>
 ```
@@ -280,7 +280,7 @@ or
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.Swagger" Version="5.0.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.Swagger" Version="6.0.0" />
         ...
 </ItemGroup>
 ```
@@ -308,7 +308,7 @@ or
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.AwsXRay" Version="5.0.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.AwsXRay" Version="6.0.0" />
         ...
 </ItemGroup>
 ```

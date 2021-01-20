@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net;
 using System.Text.RegularExpressions;
-using AsyncFriendlyStackTrace;
 using Frogvall.AspNetCore.ExceptionHandling.Exceptions;
 using Frogvall.AspNetCore.ExceptionHandling.Mapper;
 using Microsoft.AspNetCore.Http;
@@ -84,7 +83,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
             if (isDevelopment)
             {
                 error.Message = ex.Message;
-                error.DetailedMessage = ex.ToAsyncString();
+                error.DetailedMessage = ex.ToString();
             }
             else
             {
