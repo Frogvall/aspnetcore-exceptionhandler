@@ -36,19 +36,19 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             _exceptionSetByExceptionListener = null;
         }
 
-        private HttpClient SetupServer(ServerType serverType, bool useExceptionHandlerFilter, string testServiceName)
+        private HttpClient SetupServer(ServerType serverType, bool useExceptionHandlerFilter, bool addExceptionListener, string testServiceName)
         {
             switch (serverType) {
                 case ServerType.Mvc:
-                    return SetupServerWithMvc(useExceptionHandlerFilter, testServiceName);
+                    return SetupServerWithMvc(useExceptionHandlerFilter, addExceptionListener, testServiceName);
                 case ServerType.Controllers:
-                    return SetupServerWithControllers(useExceptionHandlerFilter, testServiceName);
+                    return SetupServerWithControllers(useExceptionHandlerFilter, addExceptionListener, testServiceName);
                 default:
                     throw new NotImplementedException();;
             }
         }
 
-        private HttpClient SetupServerWithMvc(bool useExceptionHandlerFilter, string testServiceName)
+        private HttpClient SetupServerWithMvc(bool useExceptionHandlerFilter, bool addExceptionListener, string testServiceName)
         {
             var options = new ExceptionMapperOptions
                 {
@@ -60,11 +60,13 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
                 {
                     options.EnableEndpointRouting = false;
                     options.Filters.Add(new ValidateModelFilter {ErrorCode = 1337});
-                    if (useExceptionHandlerFilter) options.Filters.Add(new ApiExceptionFilter(ex => _exceptionSetByExceptionListener = ex, ex => throw new Exception("Should not crash the application.")));
+                    if (useExceptionHandlerFilter && addExceptionListener) options.Filters.Add(new ApiExceptionFilter(ex => _exceptionSetByExceptionListener = ex, ex => throw new Exception("Should not crash the application.")));
+                    else if (useExceptionHandlerFilter) options.Filters.Add<ApiExceptionFilter>();
                 },
                 app =>
                 {
-                    if (!useExceptionHandlerFilter) app.UseApiExceptionHandler(ex => _exceptionSetByExceptionListener = ex);
+                    if (!useExceptionHandlerFilter && addExceptionListener) app.UseApiExceptionHandler(ex => _exceptionSetByExceptionListener = ex);
+                    else if (!useExceptionHandlerFilter) app.UseApiExceptionHandler();
                     app.UseMiddleware<TestAddCustomHeaderMiddleware>();
                     app.UseMvc();
                 },
@@ -73,7 +75,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
                 
         }
 
-        private HttpClient SetupServerWithControllers(bool useExceptionHandlerFilter, string testServiceName)
+        private HttpClient SetupServerWithControllers(bool useExceptionHandlerFilter, bool addExceptionListener, string testServiceName)
         {
              var options = new ExceptionMapperOptions
                 {
@@ -85,11 +87,13 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
                 {
                     options.EnableEndpointRouting = false;
                     options.Filters.Add(new ValidateModelFilter {ErrorCode = 1337});
-                    if (useExceptionHandlerFilter) options.Filters.Add(new ApiExceptionFilter(ex => _exceptionSetByExceptionListener = ex, ex => throw new Exception("Should not crash the application.")));
+                    if (useExceptionHandlerFilter && addExceptionListener) options.Filters.Add(new ApiExceptionFilter(ex => _exceptionSetByExceptionListener = ex, ex => throw new Exception("Should not crash the application.")));
+                    else if (useExceptionHandlerFilter) options.Filters.Add<ApiExceptionFilter>();
                 },
                 app =>
                 {
-                    if (!useExceptionHandlerFilter) app.UseApiExceptionHandler(ex => _exceptionSetByExceptionListener = ex);
+                    if (!useExceptionHandlerFilter && addExceptionListener) app.UseApiExceptionHandler(ex => _exceptionSetByExceptionListener = ex);
+                    else if (!useExceptionHandlerFilter) app.UseApiExceptionHandler();
                     app.UseMiddleware<TestAddCustomHeaderMiddleware>();
                     app.UseRouting();
                     app.UseEndpoints(endpoints =>
@@ -102,14 +106,18 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData(ServerType.Mvc, true, null)]
-        [InlineData(ServerType.Controllers, true, null)]
-        [InlineData(ServerType.Mvc, false, TestServiceName)]
-        [InlineData(ServerType.Controllers, false, TestServiceName)]
-        public async Task PostTest_ValidDto_ReturnsOk(ServerType serverType, bool useExceptionHandlerFilter, string testServiceName)
+        [InlineData(ServerType.Mvc, true, true, null)]
+        [InlineData(ServerType.Controllers, true, true, null)]
+        [InlineData(ServerType.Mvc, false, true, TestServiceName)]
+        [InlineData(ServerType.Controllers, false, true, TestServiceName)]
+        [InlineData(ServerType.Mvc, true, false, null)]
+        [InlineData(ServerType.Controllers, true, false, null)]
+        [InlineData(ServerType.Mvc, false, false, TestServiceName)]
+        [InlineData(ServerType.Controllers, false, false, TestServiceName)]
+        public async Task PostTest_ValidDto_ReturnsOk(ServerType serverType, bool useExceptionHandlerFilter, bool addExceptionListener, string testServiceName)
         {
             //Arrange
-            var client = SetupServer(serverType, useExceptionHandlerFilter, testServiceName);
+            var client = SetupServer(serverType, useExceptionHandlerFilter, addExceptionListener, testServiceName);
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 1}}", Encoding.UTF8, "text/json");
 
             // Act
@@ -120,12 +128,12 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData(ServerType.Mvc, true, null)]
-        [InlineData(ServerType.Controllers, true, null)]
-        public async Task PostTest_NegativeIntDto_ReturnsInternalServerErrorWithHeader(ServerType serverType, bool useExceptionHandlerFilter, string testServiceName)
+        [InlineData(ServerType.Mvc, true, false, null)]
+        [InlineData(ServerType.Controllers, true, false, null)]
+        public async Task PostTest_NegativeIntDto_ReturnsInternalServerErrorWithHeader(ServerType serverType, bool useExceptionHandlerFilter, bool addExceptionListener, string testServiceName)
         {
             //Arrange
-            var client = SetupServer(serverType, useExceptionHandlerFilter, testServiceName);
+            var client = SetupServer(serverType, useExceptionHandlerFilter, addExceptionListener, testServiceName);
             var expectedHeaderValue = "test-value";
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": -1}}", Encoding.UTF8, "text/json");
             content.Headers.Add(TestAddCustomHeaderMiddleware.TestHeader, new[]{expectedHeaderValue});
@@ -146,12 +154,12 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData(ServerType.Mvc, false, TestServiceName)]
-        [InlineData(ServerType.Controllers, false, TestServiceName)]
-        public async Task PostTest_NegativeIntDto_ReturnsInternalServerErrorNoHeader(ServerType serverType, bool useExceptionHandlerFilter, string testServiceName)
+        [InlineData(ServerType.Mvc, false, false, TestServiceName)]
+        [InlineData(ServerType.Controllers, false, false, TestServiceName)]
+        public async Task PostTest_NegativeIntDto_ReturnsInternalServerErrorNoHeader(ServerType serverType, bool useExceptionHandlerFilter, bool addExceptionListener, string testServiceName)
         {
             //Arrange
-            var client = SetupServer(serverType, useExceptionHandlerFilter, testServiceName);
+            var client = SetupServer(serverType, useExceptionHandlerFilter, addExceptionListener, testServiceName);
             var notExpectedHeaderValue = "test-value";
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": -1}}", Encoding.UTF8, "text/json");
             content.Headers.Add(TestAddCustomHeaderMiddleware.TestHeader, new[] { notExpectedHeaderValue });
@@ -172,14 +180,14 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData(ServerType.Mvc, true, null)]
-        [InlineData(ServerType.Controllers, true, null)]
-        [InlineData(ServerType.Mvc, false, TestServiceName)]
-        [InlineData(ServerType.Controllers, false, TestServiceName)]
-        public async Task PostTest_ValidDto_PostTest_DtoIntSetToOne_ExceptionListenerNotSet(ServerType serverType, bool useExceptionHandlerFilter, string testServiceName)
+        [InlineData(ServerType.Mvc, true, true, null)]
+        [InlineData(ServerType.Controllers, true, true, null)]
+        [InlineData(ServerType.Mvc, false, true, TestServiceName)]
+        [InlineData(ServerType.Controllers, false, true, TestServiceName)]
+        public async Task PostTest_ValidDto_PostTest_DtoIntSetToOne_ExceptionListenerNotSet(ServerType serverType, bool useExceptionHandlerFilter, bool addExceptionListener, string testServiceName)
         {
             //Arrange
-            var client = SetupServer(serverType, useExceptionHandlerFilter, testServiceName);
+            var client = SetupServer(serverType, useExceptionHandlerFilter, addExceptionListener, testServiceName);
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 1}}", Encoding.UTF8, "text/json");
 
             // Act
@@ -190,14 +198,14 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData(ServerType.Mvc, true, null)]
-        [InlineData(ServerType.Controllers, true, null)]
-        [InlineData(ServerType.Mvc, false, TestServiceName)]
-        [InlineData(ServerType.Controllers, false, TestServiceName)]
-        public async Task PostTest_DtoIntSetToFour_ExceptionListenerSetsException(ServerType serverType, bool useExceptionHandlerFilter, string testServiceName)
+        [InlineData(ServerType.Mvc, true, true, null)]
+        [InlineData(ServerType.Controllers, true, true, null)]
+        [InlineData(ServerType.Mvc, false, true, TestServiceName)]
+        [InlineData(ServerType.Controllers, false, true, TestServiceName)]
+        public async Task PostTest_DtoIntSetToFour_ExceptionListenerSetsException(ServerType serverType, bool useExceptionHandlerFilter, bool addExceptionListener, string testServiceName)
         {
             //Arrange
-            var client = SetupServer(serverType, useExceptionHandlerFilter, testServiceName);
+            var client = SetupServer(serverType, useExceptionHandlerFilter, addExceptionListener, testServiceName);
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 4}}", Encoding.UTF8, "text/json");
 
             // Act
@@ -208,14 +216,14 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData(ServerType.Mvc, true, null)]
-        [InlineData(ServerType.Controllers, true, null)]
-        [InlineData(ServerType.Mvc, false, TestServiceName)]
-        [InlineData(ServerType.Controllers, false, TestServiceName)]
-        public async Task PostTest_DtoIntSetToFour_ReturnsError(ServerType serverType, bool useExceptionHandlerFilter, string testServiceName)
+        [InlineData(ServerType.Mvc, true, false, null)]
+        [InlineData(ServerType.Controllers, true, false, null)]
+        [InlineData(ServerType.Mvc, false, false, TestServiceName)]
+        [InlineData(ServerType.Controllers, false, false, TestServiceName)]
+        public async Task PostTest_DtoIntSetToFour_ReturnsError(ServerType serverType, bool useExceptionHandlerFilter, bool addExceptionListener, string testServiceName)
         {
             //Arrange
-            var client = SetupServer(serverType, useExceptionHandlerFilter, testServiceName);
+            var client = SetupServer(serverType, useExceptionHandlerFilter, addExceptionListener, testServiceName);
             var expectedErrorCode = TestEnum.MyThirdValue;
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 4}}", Encoding.UTF8, "text/json");
             const string expectedContext = "Test1";
@@ -235,14 +243,14 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData(ServerType.Mvc, true, null)]
-        [InlineData(ServerType.Controllers, true, null)]
-        [InlineData(ServerType.Mvc, false, TestServiceName)]
-        [InlineData(ServerType.Controllers, false, TestServiceName)]
-        public async Task PostTest_DtoIntSetToThree_ReturnsError(ServerType serverType, bool useExceptionHandlerFilter, string testServiceName)
+        [InlineData(ServerType.Mvc, true, false, null)]
+        [InlineData(ServerType.Controllers, true, false, null)]
+        [InlineData(ServerType.Mvc, false, false, TestServiceName)]
+        [InlineData(ServerType.Controllers, false, false, TestServiceName)]
+        public async Task PostTest_DtoIntSetToThree_ReturnsError(ServerType serverType, bool useExceptionHandlerFilter, bool addExceptionListener, string testServiceName)
         {
             //Arrange
-            var client = SetupServer(serverType, useExceptionHandlerFilter, testServiceName);
+            var client = SetupServer(serverType, useExceptionHandlerFilter, addExceptionListener, testServiceName);
             var expectedErrorCode = TestEnum.MyFirstValue;
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 3}}", Encoding.UTF8, "text/json");
             const string expectedContext = "Test1";
@@ -262,14 +270,14 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData(ServerType.Mvc, true, null)]
-        [InlineData(ServerType.Controllers, true, null)]
-        [InlineData(ServerType.Mvc, false, TestServiceName)]
-        [InlineData(ServerType.Controllers, false, TestServiceName)]
-        public async Task PostTest_DtoIntSetToTwo_ReturnsFault(ServerType serverType, bool useExceptionHandlerFilter, string testServiceName)
+        [InlineData(ServerType.Mvc, true, false, null)]
+        [InlineData(ServerType.Controllers, true, false, null)]
+        [InlineData(ServerType.Mvc, false, false, TestServiceName)]
+        [InlineData(ServerType.Controllers, false, false, TestServiceName)]
+        public async Task PostTest_DtoIntSetToTwo_ReturnsFault(ServerType serverType, bool useExceptionHandlerFilter, bool addExceptionListener, string testServiceName)
         {
             //Arrange
-            var client = SetupServer(serverType, useExceptionHandlerFilter, testServiceName);
+            var client = SetupServer(serverType, useExceptionHandlerFilter, addExceptionListener, testServiceName);
             var expectedErrorCode = TestEnum.MySecondValue;
             var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 2}}", Encoding.UTF8, "text/json");
             const string expectedContext = "Test2";
@@ -289,14 +297,14 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
         }
 
         [Theory]
-        [InlineData(ServerType.Mvc, true, null)]
-        [InlineData(ServerType.Controllers, true, null)]
-        [InlineData(ServerType.Mvc, false, TestServiceName)]
-        [InlineData(ServerType.Controllers, false, TestServiceName)]
-        public async Task GetCancellationTest_Always_ReturnsFault(ServerType serverType, bool useExceptionHandlerFilter, string testServiceName)
+        [InlineData(ServerType.Mvc, true, false, null)]
+        [InlineData(ServerType.Controllers, true, false, null)]
+        [InlineData(ServerType.Mvc, false, false, TestServiceName)]
+        [InlineData(ServerType.Controllers, false, false, TestServiceName)]
+        public async Task GetCancellationTest_Always_ReturnsFault(ServerType serverType, bool useExceptionHandlerFilter, bool addExceptionListener, string testServiceName)
         {
             //Arrange
-            var client = SetupServer(serverType, useExceptionHandlerFilter, testServiceName);
+            var client = SetupServer(serverType, useExceptionHandlerFilter, addExceptionListener, testServiceName);
             var expectedServiceName = testServiceName ?? Assembly.GetEntryAssembly().GetName().Name;
 
             // Act
