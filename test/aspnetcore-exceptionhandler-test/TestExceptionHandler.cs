@@ -61,7 +61,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
                     options.EnableEndpointRouting = false;
                     options.Filters.Add(new ValidateModelFilter {ErrorCode = 1337});
                     if (useExceptionHandlerFilter && addExceptionListener) options.Filters.Add(new ApiExceptionFilter(ex => _exceptionSetByExceptionListener = ex, ex => throw new Exception("Should not crash the application.")));
-                    else if (useExceptionHandlerFilter) options.Filters.Add<ApiExceptionFilter>();
+                    else if (useExceptionHandlerFilter) options.Filters.Add(new ApiExceptionFilter());
                 },
                 app =>
                 {
@@ -88,7 +88,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
                     options.EnableEndpointRouting = false;
                     options.Filters.Add(new ValidateModelFilter {ErrorCode = 1337});
                     if (useExceptionHandlerFilter && addExceptionListener) options.Filters.Add(new ApiExceptionFilter(ex => _exceptionSetByExceptionListener = ex, ex => throw new Exception("Should not crash the application.")));
-                    else if (useExceptionHandlerFilter) options.Filters.Add<ApiExceptionFilter>();
+                    else if (useExceptionHandlerFilter) options.Filters.Add(new ApiExceptionFilter());
                 },
                 app =>
                 {
