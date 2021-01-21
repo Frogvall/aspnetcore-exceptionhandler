@@ -46,7 +46,7 @@ Or add it to your csproj file.
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling" Version="6.0.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling" Version="6.1.0" />
         ...
 </ItemGroup>
 ```
@@ -69,7 +69,7 @@ It's certainly viable to have both the middleware and the filter hooked in at th
 To add the exception handler filter, add the following to according `MVCOptions` in your `ConfigureServices()` method.
 
 ```csharp
-mvcOptions.Filters.Add<ApiExceptionFilter>();
+mvcOptions.Filters.Add(new ApiExceptionFilter());
 ```
 
 Example:
@@ -77,8 +77,16 @@ Example:
 ```csharp
 services.AddControllers(mvcOptions =>
     {
-        mvcOptions.Filters.Add<ApiExceptionFilter>();
+        mvcOptions.Filters.Add(new ApiExceptionFilter());
     });
+```
+
+You can also use the included extension method:
+
+```csharp
+using Microsoft.AspNetCore.Mvc.Filters;
+
+mvcOptions.Filters.AddApiExceptionFilter();
 ```
 
 To hook it into the middleware pipeline, add this to the `Configure()` method.
@@ -96,7 +104,7 @@ Sometimes you want to do some things when the exception handler catches an excep
 ```csharp
 services.AddControllers(mvcOptions =>
     {
-        mvcOptions.Filters.Add(new ApiExceptionFilter(MyExceptionListener.HandleException));
+        mvcOptions.Filters.AddApiExceptionFilter(MyExceptionListener.HandleException);
     });
 ```
 
@@ -191,7 +199,7 @@ or
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.ModelValidation" Version="6.0.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.ModelValidation" Version="6.1.0" />
         ...
 </ItemGroup>
 ```
@@ -204,6 +212,17 @@ In order for all your controller actions to have their models automatically vali
 services.AddMvc(options =>
     {
         options.Filters.Add(new ValidateModelFilter { ErrorCode = 123 } );
+    });
+```
+
+Or you can use the included extension method:
+
+```csharp
+using Microsoft.AspNetCore.Mvc.Filters;
+
+services.AddMvc(options =>
+    {
+        options.Filters.AddValidateModelFilter(123);
     });
 ```
 
@@ -234,7 +253,7 @@ or
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson" Version="6.0.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson" Version="6.1.0" />
         ...
 </ItemGroup>
 ```
@@ -280,7 +299,7 @@ or
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.Swagger" Version="6.0.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.Swagger" Version="6.1.0" />
         ...
 </ItemGroup>
 ```
@@ -308,7 +327,7 @@ or
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.AwsXRay" Version="6.0.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.AwsXRay" Version="6.1.0" />
         ...
 </ItemGroup>
 ```
@@ -332,6 +351,6 @@ When using the exception handler filter in concordance with the AWS XRay middlew
 ```csharp
 services.AddControllers(mvcOptions =>
     {
-        mvcOptions.Filters.Add(new ApiExceptionFilter(AwsXRayExceptionListener.AddExceptionMetadataToAwsXRay));
+        mvcOptions.Filters.AddApiExceptionFilter(AwsXRayExceptionListener.AddExceptionMetadataToAwsXRay);
     });
 ```
