@@ -8,11 +8,11 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling;
-using Frogvall.AspNetCore.ExceptionHandling.Filters;
 using Frogvall.AspNetCore.ExceptionHandling.Mapper;
 using Frogvall.AspNetCore.ExceptionHandling.Test.Helpers;
 using Frogvall.AspNetCore.ExceptionHandling.Test.TestResources;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -59,9 +59,9 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
                 options =>
                 {
                     options.EnableEndpointRouting = false;
-                    options.Filters.Add(new ValidateModelFilter {ErrorCode = 1337});
-                    if (useExceptionHandlerFilter && addExceptionListener) options.Filters.Add(new ApiExceptionFilter(ex => _exceptionSetByExceptionListener = ex, ex => throw new Exception("Should not crash the application.")));
-                    else if (useExceptionHandlerFilter) options.Filters.Add(new ApiExceptionFilter());
+                    options.Filters.AddValidateModelFilter(1337);
+                    if (useExceptionHandlerFilter && addExceptionListener) options.Filters.AddApiExceptionFilter(ex => _exceptionSetByExceptionListener = ex, ex => throw new Exception("Should not crash the application."));
+                    else if (useExceptionHandlerFilter) options.Filters.AddApiExceptionFilter();
                 },
                 app =>
                 {
@@ -86,9 +86,9 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
                 options =>
                 {
                     options.EnableEndpointRouting = false;
-                    options.Filters.Add(new ValidateModelFilter {ErrorCode = 1337});
-                    if (useExceptionHandlerFilter && addExceptionListener) options.Filters.Add(new ApiExceptionFilter(ex => _exceptionSetByExceptionListener = ex, ex => throw new Exception("Should not crash the application.")));
-                    else if (useExceptionHandlerFilter) options.Filters.Add(new ApiExceptionFilter());
+                    options.Filters.AddValidateModelFilter(1337);
+                    if (useExceptionHandlerFilter && addExceptionListener) options.Filters.AddApiExceptionFilter(ex => _exceptionSetByExceptionListener = ex, ex => throw new Exception("Should not crash the application."));
+                    else if (useExceptionHandlerFilter) options.Filters.AddApiExceptionFilter();
                 },
                 app =>
                 {
