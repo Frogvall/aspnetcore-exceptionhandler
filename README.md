@@ -55,7 +55,7 @@ Or add it to your csproj file.
 
 A few other packages are handled by this repo that builds upon the functionality of the main package:
 
-- [AwsXRay](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.AwsXRay/): Adds an extra middleware for decorating the status code of the AWS XRay trace record, needed if using the exception handler middleware in unison with AWS XRay. Also adds an exception listener for decorating the trace record with the catched exception.
+- [AwsXRay](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.AwsXRay/): Adds an extra middleware for decorating the status code of the AWS XRay trace record, needed if using the exception handler middleware in unison with AWS XRay. Also adds an exception listener for decorating the trace record with the caught exception.
 - [ModelValidation](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.ModelValidation/): Adds another filter for automatically validating the models in your controller and returning with a http content on the same format as the exception handler, to make the result unison no matter if the exception handler returns it or the model validation fails. Also supplies an attribute like `[Required]`, but for non-nullable types, like integers, guids, etc.
 - [NewtonsoftJson](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson/): From version 5.0.0 this package relies on the `System.Text.Json` library for writing and parsing json. This includes the extension methods for parsing an ApiError. This package adds extra parsing options for those who are using Newtonsoft.Json instead.
 - [Swagger](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.Swagger/): Adds a couple of OperationFilters for those that use Swashbuckle.Swagger and wants to automatically decorate their Open Api documentation with 400 and 500, which the exception handler can throw for any operation.
@@ -99,7 +99,7 @@ Since middlewares are dependent on the order they are executed, make sure that a
 
 ### Exception listeners
 
-Sometimes you want to do some things when the exception handler catches an exception. One such example could be that you would want to add exception metadata to your tracing context, for example Amazon XRay. In order to do so, you can pass one or several actions to the exception handler middleware and filter. The actions will be executed when an exception is catched, before the http response is built.
+Sometimes you want to do some things when the exception handler catches an exception. One such example could be that you would want to add exception metadata to your tracing context, for example Amazon XRay. In order to do so, you can pass one or several actions to the exception handler middleware and filter. The actions will be executed when an exception is caught, before the http response is built.
 
 ```csharp
 services.AddControllers(mvcOptions =>
@@ -150,7 +150,7 @@ After an exception is mapped, it can be thrown from anyewhere in order to abort 
 When initializing the exception mapper, there are some options you can pass in. Those are:
 
 - `ServiceName`: Setting this option will override the default service name that will be added to the respond message. By default the entry assembly name will be chosen, but there are cases where this is not the correct name. When running in AWS Lambda for example, the default name would be "LambdaExecutor".
-- `RespondWithDeveloperContext`: A boolean descibing wether the developer context should be written in the respons. This is handy for example in local development, but not recommended in production. This could for example be set to `IHostEnvironment.IsDevelopment()`. The default is `false`.
+- `RespondWithDeveloperContext`: A boolean descibing wether the developer context should be written in the response. This is handy for example in local development, but not recommended in production. This could for example be set to `IHostEnvironment.IsDevelopment()`. The default is `false`.
 
 ## Api error
 
@@ -335,7 +335,7 @@ or
 ### Exception status code decorator
 
 When using the exception handling middleware, the status code for the response has not yet been set when the AWS XRay middleware catches the exception. Hence, the status code will be set to 200 in your XRay trace, even though it should be something else. This could be remedified by adding XRay before the exception handler, but then the exception metadata will be missing from the XRay trace instead, and any exception thrown by the XRay middleware will crash the application.
-Another way to remedify the problem is to add the `ExceptionStatusCodeDecoratorMiddleware` after the XRay middleware. The status decorator will catch the exception, use the exception mapper to decorate the status code and rethrow. The exception will then be catched by the XRay middleware, the XRay trace will be decorated with the correct status code and exception metadata and rethrown and finally handled by the exception handler middleware.
+Another way to remedify the problem is to add the `ExceptionStatusCodeDecoratorMiddleware` after the XRay middleware. The status decorator will catch the exception, use the exception mapper to decorate the status code and rethrow. The exception will then be caught by the XRay middleware, the XRay trace will be decorated with the correct status code and exception metadata and rethrown and finally handled by the exception handler middleware.
 
 ```csharp
 // Order is important
