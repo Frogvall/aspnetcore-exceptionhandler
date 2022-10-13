@@ -14,22 +14,24 @@ There are also a few other packages included in this repo that builds on the exc
 
 ## Table of Contents
 
-- [Installing the package](#installing-the-package)
-  - [Extension packages](#extension-packages)
-- [Using the exception handler](#using-the-exception-handler)
-  - [Exception listeners](#exception-listeners)
-- [Adding the exception mapper](#adding-the-exception-mapper)
-  - [Mapping profiles](#mapping-profiles)
-  - [Mapper options](#mapper-options)
-- [Api error](#api-error)
-- [Model validation package](#model-validation-package)
-  - [Model validation filter](#model-validation-filter)
-  - [Skip model validation filter](#skip-model-validation-filter)
-- [Newtonsoft json package](#newtonsoft-json-package)
-- [Swagger package](#swagger-package)
-- [AWS XRay package](#aws-xray-package)
-  - [Exception status code decorator](#exception-status-code-decorator)
-  - [AWS XRay exception listener](#aws-xray-exception-listener)
+- [AspNetCore ExceptionHandler](#aspnetcore-exceptionhandler)
+  - [Table of Contents](#table-of-contents)
+  - [Installing the package](#installing-the-package)
+    - [Extension packages](#extension-packages)
+  - [Using the exception handler](#using-the-exception-handler)
+    - [Exception listeners](#exception-listeners)
+  - [Adding the exception mapper](#adding-the-exception-mapper)
+    - [Mapping profiles](#mapping-profiles)
+    - [Mapper options](#mapper-options)
+  - [Api error](#api-error)
+  - [Model validation package](#model-validation-package)
+    - [Model validation filter](#model-validation-filter)
+    - [Skip model validation filter](#skip-model-validation-filter)
+  - [Newtonsoft json package](#newtonsoft-json-package)
+  - [Swagger package](#swagger-package)
+  - [AWS XRay package](#aws-xray-package)
+    - [Exception status code decorator](#exception-status-code-decorator)
+    - [AWS XRay exception listener](#aws-xray-exception-listener)
 
 ## Installing the package
 
@@ -46,7 +48,7 @@ Or add it to your csproj file.
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling" Version="6.1.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling" Version="7.0.0" />
         ...
 </ItemGroup>
 ```
@@ -199,7 +201,7 @@ or
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.ModelValidation" Version="6.1.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.ModelValidation" Version="7.0.0" />
         ...
 </ItemGroup>
 ```
@@ -253,7 +255,7 @@ or
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson" Version="6.1.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson" Version="7.0.0" />
         ...
 </ItemGroup>
 ```
@@ -299,7 +301,7 @@ or
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.Swagger" Version="6.1.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.Swagger" Version="7.0.0" />
         ...
 </ItemGroup>
 ```
@@ -327,7 +329,7 @@ or
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.AwsXRay" Version="6.1.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.AwsXRay" Version="7.0.0" />
         ...
 </ItemGroup>
 ```
