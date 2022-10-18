@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Threading.Tasks;
 using Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling;
 using Frogvall.AspNetCore.ExceptionHandling.Mapper;
@@ -37,7 +36,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Filters
                 _serializerOptions = new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    IgnoreNullValues = true
+                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
                 };
             }
 
