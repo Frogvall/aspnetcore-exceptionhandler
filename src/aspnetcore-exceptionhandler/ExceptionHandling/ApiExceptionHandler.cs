@@ -29,7 +29,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.ExceptionHandling
             _serializerOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                IgnoreNullValues = true
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
             };
         }
 
