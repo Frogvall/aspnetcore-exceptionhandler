@@ -70,7 +70,9 @@ workflows:
             - build
           filters:
             tags:
-              only: /^v.*/
+              only:
+                - /^v.*/
+                - /^base-v.*/
             branches:
               ignore: /.*/
       - deploy-awsxray:
