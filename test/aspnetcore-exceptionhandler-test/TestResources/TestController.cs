@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Net;
 using Frogvall.AspNetCore.ExceptionHandling.Attributes;
-using Frogvall.AspNetCore.ExceptionHandling.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Frogvall.AspNetCore.ExceptionHandling.Test.TestResources

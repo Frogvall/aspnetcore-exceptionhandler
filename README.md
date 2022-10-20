@@ -27,6 +27,7 @@ There are also a few other packages included in this repo that builds on the exc
   - [Model validation package](#model-validation-package)
     - [Model validation filter](#model-validation-filter)
     - [Skip model validation filter](#skip-model-validation-filter)
+    - [ApiController attribute](#apicontroller-attribute)
   - [Newtonsoft json package](#newtonsoft-json-package)
   - [Swagger package](#swagger-package)
   - [AWS XRay package](#aws-xray-package)
@@ -241,6 +242,27 @@ If using the mvc filter to add model validation as default, and you for some rea
 ```csharp
 [SkipModelValidationFilter]
 ```
+
+### ApiController attribute
+If you are utilizing the [ApiController attribute](https://learn.microsoft.com/en-us/aspnet/core/web-api/?view=aspnetcore-6.0#apicontroller-attribute), the above way of handling model validation errors will be overwritten by the ApiController flow. Then you can instead configure the ApiController flow to use the `ApiError` class for reporting model validation errors.
+
+```csharp
+services.ConfigureOptions<ConfigureApiErrorBehaviorOptions>();
+```
+
+If you want to also set the ErrorCode, do so by calling the following extension method on you your `ExceptionMapperOptions`.
+
+```csharp
+.SetModelValidationErrorCode(123);
+```
+
+Example:
+
+```csharp
+services.AddExceptionMapper(new ExceptionMapperOptions().SetModelValidationErrorCode(911), typeof(Program));
+```
+
+The ApiController flow does not currently support the `SkipModelValidation` attribute.
 
 ## Newtonsoft json package
 
