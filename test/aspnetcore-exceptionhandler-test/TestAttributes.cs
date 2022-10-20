@@ -57,7 +57,7 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
 
         private HttpClient SetupServerWithControllers()
         {
-            return ServerHelper.SetupServerWithMvc(options =>
+            return ServerHelper.SetupServerWithControllers(options =>
                 {
                     options.Filters.Add(new ValidateModelFilter { ErrorCode = 1337 });
                 },
