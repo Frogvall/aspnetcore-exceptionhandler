@@ -7,10 +7,11 @@
 [![Nuget](https://img.shields.io/nuget/v/Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson.svg?label=NewtonsoftJson)](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson/)
 [![Nuget](https://img.shields.io/nuget/v/Frogvall.AspNetCore.ExceptionHandling.Swagger.svg?label=Swagger)](https://www.nuget.org/packages/Frogvall.AspNetCore.ExceptionHandling.Swagger/)
 
-An exception handler for aspnet core that extends Microsofts exception handler middleware as well as implementing an exception handler filter.
-It catches exceptions in your aspnet operations and transforms the exception to json response messages, and sets the status code of the response.
-The package also comes with an exception mapper, that maps thrown exceptions to selected error messages and status codes. By implementing an exception mapping profile you get full control over how an exception should be mapped.
-There are also a few other packages included in this repo that builds on the exception handler, but is not necessarily exception handling per se.
+One of the conundrums of exception handling in asp net, is the question on where to catch them and turn them into http responses. The service layer should not have any conception of http, as it is purely about the underlying business logic and has no idea who calls it and why. The controller is where this logic belongs, but considering how the controller code is usually one to three lines of code and the rest is exception handling, this results in an unreasonable amount of boiler plate code in relation to business code.
+
+To tackle this conuncrum this package supply an exception mapper profile for handling of downstream exception. In that profile you map a service exception with an http response code and an internal error code. The exception handler will use the mapping profile to automatically catch any uncaught exception coming from the downstream services and transforms the exception to json response messages, and sets the status code of the response. As a result, the only exception handler boiler plate needed in the controllers are handling exceptions from the default mapping. Other than that, the controller should only contain the naïve happy path of execution.
+
+There are also support packages included in this repo that extends the exception handler, but is not needed for the core functionality.
 
 ## Table of Contents
 
