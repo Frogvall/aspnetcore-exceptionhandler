@@ -17,8 +17,8 @@ jobs:
           name: test results
           when: always
           command: |
-              dotnet tool install -g trx2junit
               export PATH="$PATH:/root/.dotnet/tools"
+              dotnet tool install -g trx2junit
               trx2junit test/**/TestResults/*.trx
       - run: dotnet pack src/aspnetcore-exceptionhandler/aspnetcore-exceptionhandler.csproj -c release -o ./package/base
       - run: dotnet pack src/aspnetcore-exceptionhandler-awsxray/aspnetcore-exceptionhandler-awsxray.csproj -c release -o ./package/awsxray
@@ -30,7 +30,7 @@ jobs:
           paths:
             - package
       - store_test_results:
-          path: test/TestResults
+          path: test/aspnetcore-exceptionhandler-test/TestResults
   deploy-base:
     executor: ci-executor
     steps:
