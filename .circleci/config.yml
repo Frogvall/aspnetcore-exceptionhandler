@@ -12,9 +12,14 @@ jobs:
     steps:
       - checkout
       - run: dotnet restore
-      - run: cd test/aspnetcore-exceptionhandler-test
-      - run: dotnet test --test-adapter-path:. --logger:"xunit;LogFilePath=./../../testresults/out.xml"
-      - run: cd ../..
+      - run: dotnet test --test-adapter-path:. --logger:"trx"
+      - run:
+          name: test results
+          when: always
+          command: |
+              dotnet tool install -g trx2junit
+              export PATH="$PATH:/root/.dotnet/tools"
+              trx2junit test/**/TestResults/*.trx
       - run: dotnet pack src/aspnetcore-exceptionhandler/aspnetcore-exceptionhandler.csproj -c release -o ./package/base
       - run: dotnet pack src/aspnetcore-exceptionhandler-awsxray/aspnetcore-exceptionhandler-awsxray.csproj -c release -o ./package/awsxray
       - run: dotnet pack src/aspnetcore-exceptionhandler-modelvalidation/aspnetcore-exceptionhandler-modelvalidation.csproj -c release -o ./package/modelvalidation
@@ -25,7 +30,7 @@ jobs:
           paths:
             - package
       - store_test_results:
-          path: ./testresults
+          path: test/TestResults
   deploy-base:
     executor: ci-executor
     steps:
