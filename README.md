@@ -20,6 +20,7 @@ There are also support packages included in this repo that extends the exception
   - [Installing the package](#installing-the-package)
     - [Extension packages](#extension-packages)
   - [Using the exception handler](#using-the-exception-handler)
+    - [Custom error object](#custom-error-object)
     - [Exception listeners](#exception-listeners)
   - [Adding the exception mapper](#adding-the-exception-mapper)
     - [Mapping profiles](#mapping-profiles)
@@ -50,7 +51,7 @@ Or add it to your csproj file.
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling" Version="7.0.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling" Version="7.1.0" />
         ...
 </ItemGroup>
 ```
@@ -100,6 +101,21 @@ app.UseApiExceptionHandler();
 ```
 
 Since middlewares are dependent on the order they are executed, make sure that any middleware that executes before the exception handler middleware can never throw an exception. If that happens you service will terminate.
+
+### Custom error object
+
+This package comes with a predefined opiniated error object, which might not be what you need in order to fulfil certain demands on your API. In order to change how the resulting error output should look, you can pass a function to the exception handler or exception filter.
+
+```csharp
+services.AddControllers(mvcOptions =>
+    {
+        mvcOptions.Filters.AddApiExceptionFilter((error, statusCode) => myErrorObject(error, statusCode));
+    });
+```
+
+```csharp
+app.UseApiExceptionHandler((error, statusCode) => myErrorObject(error, statusCode));
+```
 
 ### Exception listeners
 
@@ -203,7 +219,7 @@ or
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.ModelValidation" Version="7.0.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.ModelValidation" Version="7.1.0" />
         ...
 </ItemGroup>
 ```

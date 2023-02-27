@@ -43,6 +43,8 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
                     return SetupServerWithMvc(useExceptionHandlerFilter, addExceptionListener, testServiceName);
                 case ServerType.Controllers:
                     return SetupServerWithControllers(useExceptionHandlerFilter, addExceptionListener, testServiceName);
+                case ServerType.ControllersWithCustomErrorObject:
+                    return SetupServerWithCustomErrorObject(useExceptionHandlerFilter, addExceptionListener, testServiceName);
                 default:
                     throw new NotImplementedException();;
             }
@@ -94,6 +96,36 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
                 {
                     if (!useExceptionHandlerFilter && addExceptionListener) app.UseApiExceptionHandler(ex => _exceptionSetByExceptionListener = ex);
                     else if (!useExceptionHandlerFilter) app.UseApiExceptionHandler();
+                    app.UseMiddleware<TestAddCustomHeaderMiddleware>();
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapControllers();
+                    });
+                },
+                _output,
+                options);
+        }
+
+        private HttpClient SetupServerWithCustomErrorObject(bool useExceptionHandlerFilter, bool addExceptionListener, string testServiceName)
+        {
+             var options = new ExceptionMapperOptions
+                {
+                    RespondWithDeveloperContext = true
+                };
+            if (testServiceName != null) options.ServiceName = testServiceName; 
+            return ServerHelper.SetupServerWithControllers(
+                options =>
+                {
+                    options.EnableEndpointRouting = false;
+                    options.Filters.AddValidateModelFilter(1337);
+                    if (useExceptionHandlerFilter && addExceptionListener) options.Filters.AddApiExceptionFilter((error, statusCode) => new TestCustomErrorObject(error, statusCode), ex => _exceptionSetByExceptionListener = ex, ex => throw new Exception("Should not crash the application."));
+                    else if (useExceptionHandlerFilter) options.Filters.AddApiExceptionFilter((error, statusCode) => new TestCustomErrorObject(error, statusCode));
+                },
+                app =>
+                {
+                    if (!useExceptionHandlerFilter && addExceptionListener) app.UseApiExceptionHandler((error, statusCode) => new TestCustomErrorObject(error, statusCode), ex => _exceptionSetByExceptionListener = ex);
+                    else if (!useExceptionHandlerFilter) app.UseApiExceptionHandler((error, statusCode) => new TestCustomErrorObject(error, statusCode));
                     app.UseMiddleware<TestAddCustomHeaderMiddleware>();
                     app.UseRouting();
                     app.UseEndpoints(endpoints =>
@@ -317,6 +349,29 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
             error.Error.Should().Be("Frogvall.AspNetCore.ExceptionHandling.OperationCanceled");
             error.Service.Should().Be(expectedServiceName);
             error.DeveloperContext.Should().BeNull();
+        }
+
+        [Theory]
+        [InlineData(ServerType.ControllersWithCustomErrorObject, true, true, null)]
+        [InlineData(ServerType.ControllersWithCustomErrorObject, true, false, null)]
+        [InlineData(ServerType.ControllersWithCustomErrorObject, false, false, null)]
+        public async Task PostTest_CustomErrorObjectFunction_ReturnsCustomErrorObject(ServerType serverType, bool useExceptionHandlerFilter, bool addExceptionListener, string testServiceName)
+        {
+            //Arrange
+            var client = SetupServer(serverType, useExceptionHandlerFilter, addExceptionListener, testServiceName);
+            var content = new StringContent($@"{{""NullableObject"": ""string"", ""NonNullableObject"": 5}}", Encoding.UTF8, "text/json");
+
+            // Act
+            var response = await client.PostAsync("/api/Test", content);
+            var response1 = await response.Content.ReadAsStringAsync();
+            var error = JsonSerializer.Deserialize<TestCustomErrorObject>(await response.Content.ReadAsStringAsync(), _serializerOptions);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            error.Status.Should().Be("400");
+            error.Type.Should().Be("Frogvall.AspNetCore.ExceptionHandling.Test.TestResources.TestEnum.MyThirdValue");
+            error.Detail.Should().Be("Object > 4");
+            error.Title.Should().Be("Bad request");
         }
     }
 }
