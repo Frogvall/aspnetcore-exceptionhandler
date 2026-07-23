@@ -19,21 +19,25 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test.Helpers
     {
         public static HttpClient SetupServerWithMvc(Action<MvcOptions> mvcOptions, Action<IApplicationBuilder> appBuilder, ITestOutputHelper output, ExceptionMapperOptions exceptionMapperOptions = null)
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var builder = new HostBuilder()
+                .ConfigureWebHost(webHost =>
                 {
-                    var descriptor =
-                        new ServiceDescriptor(
-                            typeof(ILogger<ValidateModelFilter>),
-                            TestLogger.Create<ValidateModelFilter>(output));
-                    services.Replace(descriptor);
-                    services.AddExceptionMapper(exceptionMapperOptions, typeof(ServerHelper));
-                    services.AddMvc(mvcOptions);
-                })
-                .Configure(appBuilder);
+                    webHost.UseTestServer();
+                    webHost.ConfigureServices(services =>
+                    {
+                        var descriptor =
+                            new ServiceDescriptor(
+                                typeof(ILogger<ValidateModelFilter>),
+                                TestLogger.Create<ValidateModelFilter>(output));
+                        services.Replace(descriptor);
+                        services.AddExceptionMapper(exceptionMapperOptions, typeof(ServerHelper));
+                        services.AddMvc(mvcOptions);
+                    });
+                    webHost.Configure(appBuilder);
+                });
 
-            var server = new TestServer(builder);
-            return server.CreateClient();
+            var host = builder.Start();
+            return host.GetTestClient();
         }
 
         public static HttpClient SetupServerWithControllers(Action<MvcOptions> mvcOptions, Action<IApplicationBuilder> appBuilder, ITestOutputHelper output, ExceptionMapperOptions exceptionMapperOptions = null)

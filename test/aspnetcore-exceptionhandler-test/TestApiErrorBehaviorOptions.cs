@@ -14,14 +14,12 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Frogvall.AspNetCore.ExceptionHandling.Test
 {
     public class TestApiErrorBehaviorOptions
     {
         private const string ValidationError = "Frogvall.AspNetCore.ExceptionHandling.ModelValidationError"; 
-        private readonly ITestOutputHelper _output;
         private readonly HttpClient _client;
 
         public TestApiErrorBehaviorOptions()
