@@ -51,7 +51,7 @@ Or add it to your csproj file.
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling" Version="7.1.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling" Version="9.0.0" />
         ...
 </ItemGroup>
 ```
@@ -219,7 +219,7 @@ or
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.ModelValidation" Version="7.1.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.ModelValidation" Version="9.0.0" />
         ...
 </ItemGroup>
 ```
@@ -294,7 +294,7 @@ or
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson" Version="7.0.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.NewtonsoftJson" Version="9.0.0" />
         ...
 </ItemGroup>
 ```
@@ -340,7 +340,7 @@ or
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.Swagger" Version="7.0.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.Swagger" Version="9.0.0" />
         ...
 </ItemGroup>
 ```
@@ -368,7 +368,7 @@ or
 ```xml
 <ItemGroup>
         ...
-        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.AwsXRay" Version="7.0.0" />
+        <PackageReference Include="Frogvall.AspNetCore.ExceptionHandling.AwsXRay" Version="9.0.0" />
         ...
 </ItemGroup>
 ```

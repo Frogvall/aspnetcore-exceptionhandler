@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Frogvall.AspNetCore.ExceptionHandling.Test
@@ -14,11 +15,15 @@ namespace Frogvall.AspNetCore.ExceptionHandling.Test
     {
         private void SetupServer(params Type[] profileTypes)
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services => { services.AddExceptionMapper(profileTypes.Select(pt => pt.GetTypeInfo()).ToArray()); })
-                .Configure(app => { app.UseApiExceptionHandler(); });
+            var builder = new HostBuilder()
+                .ConfigureWebHost(webHost =>
+                {
+                    webHost.UseTestServer();
+                    webHost.ConfigureServices(services => { services.AddExceptionMapper(profileTypes.Select(pt => pt.GetTypeInfo()).ToArray()); });
+                    webHost.Configure(app => { app.UseApiExceptionHandler(); });
+                });
 
-            new TestServer(builder);
+            builder.Start();
         }
 
         [Fact]
